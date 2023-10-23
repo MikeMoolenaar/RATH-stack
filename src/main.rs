@@ -121,27 +121,19 @@ pub struct AppState {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    // Setup DB
-    if !Sqlite::database_exists(&db_url).await.unwrap_or(false) {
-        println!("Creating database {}", db_url);
-        match Sqlite::create_database(&db_url).await {
-            Ok(_) => println!("Sqlite DB created!"),
-            Err(error) => panic!("Could not create Sqlite DB due to error: {}", error),
-        }
-    } else {
-        println!("Database already exists, moving on...");
-    }
-
-    // Setup table
-    let db_pool = SqlitePool::connect(&db_url).await.unwrap();
-    let result = sqlx::query("CREATE TABLE IF NOT EXISTS todos (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title VARCHAR(250) NOT NULL, date INTEGER NOT NULL);").execute(&db_pool).await.unwrap();
-    println!("Create user table result: {:?}", result);
-
     // Setup env
+    dotenv().ok();
     env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
     env_logger::init();
+
+    // Connect to DB
+    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    Sqlite::database_exists(&db_url)
+        .await
+        .expect("Database should exist, run `cargo sqlx database setup`");
+    let db_pool = SqlitePool::connect(&db_url)
+        .await
+        .expect("Database should connect");
 
     // Setup Actix api
     HttpServer::new(move || {
