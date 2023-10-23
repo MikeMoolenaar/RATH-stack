@@ -1,14 +1,14 @@
 use actix_files::Files;
 use actix_web::{get, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
-use chrono::{NaiveDate, NaiveDateTime};
+use chrono::NaiveDateTime;
 use dotenv::dotenv;
 use html_escape;
 use rand::{distributions::Alphanumeric, Rng};
 use serde::Deserialize;
-use serde::Serialize;
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::env;
 use std::str::FromStr;
+mod date_only_converter;
 
 #[derive(Serialize)]
 struct Info {
@@ -28,35 +28,31 @@ async fn test() -> impl Responder {
         .body("<h4>Hello world!</h4>");
 }
 
-#[derive(Deserialize)]
-struct TodoItemDto {
+#[derive(Deserialize, sqlx::FromRow)]
+struct TodoItem {
     #[serde(default)]
     id: i64,
     title: String,
-    date: String,
-}
-
-#[derive(sqlx::FromRow)]
-struct TodoItem {
-    id: i64,
-    title: String,
+    #[serde(with = "date_only_converter::date_only_to_timestamp")]
     date: i64,
 }
 
 #[post("/todos")]
 async fn todos_post(
-    web::Form(form): web::Form<TodoItemDto>,
+    web::Form(form): web::Form<TodoItem>,
     app: web::Data<AppState>,
 ) -> impl Responder {
-    let date = NaiveDate::parse_from_str(form.date.as_str(), "%Y-%m-%d").unwrap();
-    let date = date.and_hms_opt(0, 0, 0).unwrap().timestamp();
     let title = html_escape::encode_text(&form.title);
     let title_result = form.title.clone();
 
-    let query_result = sqlx::query!("INSERT INTO todos (title,date) VALUES (?, ?)", title, date)
-        .execute(&app.db)
-        .await
-        .map_err(|err: sqlx::Error| err.to_string());
+    let query_result = sqlx::query!(
+        "INSERT INTO todos (title,date) VALUES (?, ?)",
+        title,
+        form.date
+    )
+    .execute(&app.db)
+    .await
+    .map_err(|err: sqlx::Error| err.to_string());
 
     if let Err(err) = query_result {
         println!("Could not execute insert due to error: {}", err);
