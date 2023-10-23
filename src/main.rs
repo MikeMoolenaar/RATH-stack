@@ -4,7 +4,7 @@ use chrono::NaiveDateTime;
 use dotenv::dotenv;
 use html_escape;
 use rand::{distributions::Alphanumeric, Rng};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::env;
 use std::str::FromStr;
