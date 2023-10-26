@@ -1,8 +1,12 @@
+use actix_extensible_rate_limit::{
+    backend::memory::InMemoryBackend, backend::SimpleInputFunctionBuilder, RateLimiter,
+};
 use actix_files::Files;
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use dotenv::dotenv;
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::env;
+use std::time::Duration;
 
 mod models;
 mod routes;
@@ -28,10 +32,22 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Database should connect");
 
+    let rate_limiter_middleware = InMemoryBackend::builder().build();
+
     println!("Web server running at http://localhost:8080");
+
     // Setup Actix api
     HttpServer::new(move || {
+        // Assign a limit of 5 requests per minute per client ip address
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(60), 180)
+            .real_ip_key()
+            .build();
+        let rate_limiter_middleware = RateLimiter::builder(rate_limiter_middleware.clone(), input)
+            .add_headers()
+            .build();
+
         App::new()
+            .wrap(rate_limiter_middleware)
             .wrap(Logger::default())
             .app_data(web::Data::new(AppState {
                 db: db_pool.clone(),
