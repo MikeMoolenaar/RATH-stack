@@ -13,7 +13,9 @@ cargo watch -c -x run -i src/static/**
 ```
 
 ## TODO
-- [ ] Use serde more often (like parsing dates) + sanitize HTML by default for all fields
+- [x] Use serde more often (like parsing dates)
+- [x] sanitize HTML by default for all fields
+- [ ] Add rate limiting, because why not https://github.com/jacob-pro/actix-extensible-rate-limit
 - [ ] Use Tailwind
 - [ ] Use templating like Askama (like listing todos in a list), or maybe just format! idk yet
 - [ ] Rename to RATH stack, Rust Actix Turso Hhtmx

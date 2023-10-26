@@ -2,13 +2,12 @@ use actix_files::Files;
 use actix_web::{get, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
 use chrono::NaiveDateTime;
 use dotenv::dotenv;
-use html_escape;
 use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
+mod serde_converters;
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::env;
 use std::str::FromStr;
-mod date_only_converter;
 
 #[derive(Serialize)]
 struct Info {
@@ -32,8 +31,9 @@ async fn test() -> impl Responder {
 struct TodoItem {
     #[serde(default)]
     id: i64,
+    #[serde(deserialize_with = "serde_converters::html_encode")]
     title: String,
-    #[serde(with = "date_only_converter::date_only_to_timestamp")]
+    #[serde(deserialize_with = "serde_converters::date_to_timestamp")]
     date: i64,
 }
 
@@ -42,12 +42,11 @@ async fn todos_post(
     web::Form(form): web::Form<TodoItem>,
     app: web::Data<AppState>,
 ) -> impl Responder {
-    let title = html_escape::encode_text(&form.title);
-    let title_result = form.title.clone();
+    let title_clone = form.title.clone();
 
     let query_result = sqlx::query!(
         "INSERT INTO todos (title,date) VALUES (?, ?)",
-        title,
+        form.title,
         form.date
     )
     .execute(&app.db)
@@ -59,7 +58,7 @@ async fn todos_post(
         return HttpResponse::InternalServerError().body("Unknown error!");
     }
 
-    return HttpResponse::Ok().body(format!("Todo item '{}' succesfuly added", title_result));
+    return HttpResponse::Ok().body(format!("Todo item '{}' succesfuly added", title_clone));
 }
 
 #[get("/todos")]
@@ -131,6 +130,7 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Database should connect");
 
+    println!("Web server running at http://localhost:8080");
     // Setup Actix api
     HttpServer::new(move || {
         App::new()
