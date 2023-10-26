@@ -12,7 +12,7 @@ pub fn error_500<B>(res: ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>> 
         .map_into_boxed_body()
         .map_into_right_body();
 
-    Ok(ErrorHandlerResponse::Response(res))
+    return Ok(ErrorHandlerResponse::Response(res));
 }
 
 pub fn error_429<B>(res: ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>> {
@@ -27,5 +27,5 @@ pub fn error_429<B>(res: ServiceResponse<B>) -> Result<ErrorHandlerResponse<B>> 
         .map_into_boxed_body()
         .map_into_right_body();
 
-    Ok(ErrorHandlerResponse::Response(res))
+    return Ok(ErrorHandlerResponse::Response(res));
 }

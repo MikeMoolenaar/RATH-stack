@@ -6,7 +6,9 @@ use std::str::FromStr;
 
 #[get("/")]
 async fn hello() -> impl Responder {
-    return HttpResponse::Ok().body("Hello world!!!!");
+    return HttpResponse::Ok()
+        .content_type("text/html")
+        .body("Hello world!<br> You want to go to <a href=\"/static/index.html\">static/index.html</a> right?");
 }
 
 #[get("/test")]
@@ -47,7 +49,7 @@ async fn todos_get(app: web::Data<AppState>) -> impl Responder {
         .await
         .unwrap();
 
-    let mut str = String::from_str("<ul>").unwrap();
+    let mut str = String::from_str("<ul class=\"list-disc list-inside\">").unwrap();
 
     for res in query_result {
         let date_formated: String = NaiveDateTime::from_timestamp_opt(res.date, 0)

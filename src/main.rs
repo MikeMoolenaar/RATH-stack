@@ -44,7 +44,7 @@ async fn main() -> std::io::Result<()> {
 
     // Setup Actix api
     HttpServer::new(move || {
-        // Assign a limit of 5 requests per minute per client ip address
+        // Assign a limit of 180 requests per minute per client ip address
         let input = SimpleInputFunctionBuilder::new(Duration::from_secs(60), 180)
             .real_ip_key()
             .build();
