@@ -1,13 +1,19 @@
 use actix_extensible_rate_limit::{
-    backend::memory::InMemoryBackend, backend::SimpleInputFunctionBuilder, RateLimiter,
+    backend::{memory::InMemoryBackend, SimpleInputFunctionBuilder},
+    RateLimiter,
 };
 use actix_files::Files;
-use actix_web::{middleware::Logger, web, App, HttpServer};
+use actix_web::{
+    http::StatusCode,
+    middleware::{ErrorHandlers, Logger},
+    web, App, HttpServer,
+};
 use dotenv::dotenv;
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::env;
 use std::time::Duration;
 
+mod error_handlers;
 mod models;
 mod routes;
 mod serde_converters;
@@ -48,6 +54,11 @@ async fn main() -> std::io::Result<()> {
 
         App::new()
             .wrap(rate_limiter_middleware)
+            .wrap(
+                ErrorHandlers::new()
+                    .handler(StatusCode::INTERNAL_SERVER_ERROR, error_handlers::error_500)
+                    .handler(StatusCode::TOO_MANY_REQUESTS, error_handlers::error_429),
+            )
             .wrap(Logger::default())
             .app_data(web::Data::new(AppState {
                 db: db_pool.clone(),
