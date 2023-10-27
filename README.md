@@ -29,6 +29,6 @@ npx tailwindcss -o output.css --watch
 - [x] Move from Artix to Axum
 - [ ] Add navbar
 - [ ] Add a login page
-- [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust
+- [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust  
 ~~- [ ] Use Turso~~ Sqlx doesn't support turso...
 - [ ] Rename to RATH stack, Rust Actix Turso Hhtmx
