@@ -26,7 +26,9 @@ npx tailwindcss -o output.css --watch
 - [x] Add rate limiting, because why not https://github.com/jacob-pro/actix-extensible-rate-limit
 - [x] Use Tailwind
 - [x] Use templating like Askama (like listing todos in a list), or maybe just format! idk yet
-- [ ] Rewrite in Axum
-- [ ] Rename to RATH stack, Rust Actix Turso Hhtmx
+- [x] Move from Artix to Axum
+- [ ] Add navbar
+- [ ] Add a login page
 - [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust
-- [ ] Use Turso
+~~- [ ] Use Turso~~ Sqlx doesn't support turso...
+- [ ] Rename to RATH stack, Rust Actix Turso Hhtmx
