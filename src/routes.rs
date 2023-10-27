@@ -1,35 +1,40 @@
-use crate::{models::*, AppState};
-use actix_web::{get, post, web, HttpResponse, Responder};
+use crate::models::*;
+use crate::AppState;
+use axum::extract::State;
+use axum::{http::StatusCode, response::Html, response::IntoResponse, response::Json, Form};
 use chrono::NaiveDateTime;
 use leptos::ssr::render_to_string;
 use leptos::{view, CollectView, IntoView};
 use rand::{distributions::Alphanumeric, Rng};
+use std::sync::Arc;
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    return HttpResponse::Ok()
-        .content_type("text/html")
-        .body("Hello world!<br> You want to go to <a href=\"/static/index.html\">static/index.html</a> right?");
+pub async fn index() -> Html<String> {
+    let html = render_to_string(|| {
+        view! {
+            <p>
+            Hello world!<br/>
+            "You want to go to "<a href="/static/">static</a>" right?"
+            </p>
+        }
+    });
+
+    return Html(html.to_string());
 }
 
-#[get("/test")]
-async fn test() -> impl Responder {
+pub async fn test() -> Html<String> {
     let html = render_to_string(|| {
         view! {
             <h1>Hi</h1>
         }
     });
 
-    return HttpResponse::Ok()
-        .content_type("text/html")
-        .body(html.to_string());
+    return Html(html.to_string());
 }
 
-#[post("/todos")]
-async fn todos_post(
-    web::Form(form): web::Form<TodoItem>,
-    app: web::Data<AppState>,
-) -> impl Responder {
+pub async fn create_todo(
+    State(data): State<Arc<AppState>>,
+    Form(form): Form<TodoItem>,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
     let title_clone = form.title.clone();
 
     let query_result = sqlx::query!(
@@ -37,22 +42,24 @@ async fn todos_post(
         form.title,
         form.date
     )
-    .execute(&app.db)
+    .execute(&data.db)
     .await
     .map_err(|err: sqlx::Error| err.to_string());
 
     if let Err(err) = query_result {
         println!("Could not execute insert due to error: {}", err);
-        return HttpResponse::InternalServerError().body("Unknown error!");
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            String::from("Unknown error"),
+        ));
     }
 
-    return HttpResponse::Ok().body(format!("Todo item '{}' succesfuly added", title_clone));
+    return Ok(format!("Todo item '{}' succesfuly added", title_clone));
 }
 
-#[get("/todos")]
-async fn todos_get(app: web::Data<AppState>) -> impl Responder {
+pub async fn get_todos(State(data): State<Arc<AppState>>) -> Html<String> {
     let query_result: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
-        .fetch_all(&app.db)
+        .fetch_all(&data.db)
         .await
         .unwrap();
 
@@ -77,26 +84,17 @@ async fn todos_get(app: web::Data<AppState>) -> impl Responder {
         }
     });
 
-    return HttpResponse::Ok()
-        .content_type("text/html")
-        .body(html.to_string());
+    return Html(html.to_string());
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    return HttpResponse::Ok().body(req_body);
-}
-
-#[get("/json")]
-async fn json() -> web::Json<Info> {
-    return web::Json(Info {
+pub async fn json() -> Json<Info> {
+    return Json(Info {
         name: String::from("Mike"),
         age: 24,
     });
 }
 
-#[get("/json-list")]
-async fn json_list() -> web::Json<Vec<Info>> {
+pub async fn json_list() -> Json<Vec<Info>> {
     let mut vec = Vec::new();
 
     for i in 0..5_000u32 {
@@ -107,15 +105,5 @@ async fn json_list() -> web::Json<Vec<Info>> {
             .collect();
         vec.push(Info { name: s, age: i });
     }
-    return web::Json(vec);
-}
-
-pub fn config(conf: &mut web::ServiceConfig) {
-    conf.service(hello)
-        .service(test)
-        .service(todos_get)
-        .service(todos_post)
-        .service(echo)
-        .service(json)
-        .service(json_list);
+    return Json(vec);
 }

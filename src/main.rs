@@ -1,19 +1,17 @@
-use actix_extensible_rate_limit::{
-    backend::{memory::InMemoryBackend, SimpleInputFunctionBuilder},
-    RateLimiter,
-};
-use actix_files::Files;
-use actix_web::{
-    http::StatusCode,
-    middleware::{ErrorHandlers, Logger},
-    web, App, HttpServer,
+use axum::{
+    error_handling::HandleErrorLayer,
+    routing::{get, post},
+    BoxError, Router,
 };
 use dotenv::dotenv;
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::env;
-use std::time::Duration;
+use std::net::SocketAddr;
+use std::sync::Arc;
+use tower::ServiceBuilder;
+use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
+use tower_http::services::{ServeDir, ServeFile};
 
-mod error_handlers;
 mod models;
 mod routes;
 mod serde_converters;
@@ -22,12 +20,9 @@ pub struct AppState {
     db: SqlitePool,
 }
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    // Setup env
+#[tokio::main]
+async fn main() {
     dotenv().ok();
-    env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
-    env_logger::init();
 
     // Connect to DB
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -38,35 +33,46 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("Database should connect");
 
-    let rate_limiter_middleware = InMemoryBackend::builder().build();
+    // Setup static file service
+    let static_dir = ServeDir::new("src/static")
+        .append_index_html_on_directories(true)
+        .not_found_service(ServeFile::new("src/static/404.html"));
 
-    println!("Web server running at http://localhost:8080");
+    // Setup rate limiting
+    let governor_conf = Box::new(
+        GovernorConfigBuilder::default()
+            .per_millisecond(500)
+            .burst_size(50)
+            .use_headers()
+            .finish()
+            .unwrap(),
+    );
 
-    // Setup Actix api
-    HttpServer::new(move || {
-        // Assign a limit of 180 requests per minute per client ip address
-        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(60), 180)
-            .real_ip_key()
-            .build();
-        let rate_limiter_middleware = RateLimiter::builder(rate_limiter_middleware.clone(), input)
-            .add_headers()
-            .build();
+    // Setup router
+    let app = Router::new()
+        .nest_service("/static", static_dir)
+        .route("/", get(routes::index))
+        .route("/test", get(routes::test))
+        .route("/todos", post(routes::create_todo).get(routes::get_todos))
+        .route("/json", get(routes::json))
+        .route("/json-list", get(routes::json_list))
+        .layer(
+            ServiceBuilder::new()
+                .layer(HandleErrorLayer::new(|e: BoxError| async move {
+                    display_error(e)
+                }))
+                .layer(GovernorLayer {
+                    config: Box::leak(governor_conf),
+                }),
+        )
+        .with_state(Arc::new(AppState {
+            db: db_pool.clone(),
+        }));
 
-        App::new()
-            .wrap(rate_limiter_middleware)
-            .wrap(
-                ErrorHandlers::new()
-                    .handler(StatusCode::INTERNAL_SERVER_ERROR, error_handlers::error_500)
-                    .handler(StatusCode::TOO_MANY_REQUESTS, error_handlers::error_429),
-            )
-            .wrap(Logger::default())
-            .app_data(web::Data::new(AppState {
-                db: db_pool.clone(),
-            }))
-            .service(Files::new("/static", "src/static"))
-            .configure(routes::config)
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    println!("Server is running at http://localhost:8080");
+
+    axum::Server::bind(&"127.0.0.1:8080".parse().unwrap())
+        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
+        .await
+        .unwrap();
 }

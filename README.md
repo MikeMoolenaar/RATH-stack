@@ -1,4 +1,4 @@
-# Actix web test
+# Rust + HTMX playground
 
 ## Getting started
 Setup:
