@@ -1,8 +1,9 @@
 use crate::{models::*, AppState};
 use actix_web::{get, post, web, HttpResponse, Responder};
 use chrono::NaiveDateTime;
+use leptos::ssr::render_to_string;
+use leptos::{view, CollectView, IntoView};
 use rand::{distributions::Alphanumeric, Rng};
-use std::str::FromStr;
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -13,9 +14,15 @@ async fn hello() -> impl Responder {
 
 #[get("/test")]
 async fn test() -> impl Responder {
+    let html = render_to_string(|| {
+        view! {
+            <h1>Hi</h1>
+        }
+    });
+
     return HttpResponse::Ok()
         .content_type("text/html")
-        .body("<h4>Hello world!</h4>");
+        .body(html.to_string());
 }
 
 #[post("/todos")]
@@ -49,18 +56,30 @@ async fn todos_get(app: web::Data<AppState>) -> impl Responder {
         .await
         .unwrap();
 
-    let mut str = String::from_str("<ul class=\"list-disc list-inside\">").unwrap();
+    let items = query_result
+        .iter()
+        .map(|res| {
+            let date_formatted: String = NaiveDateTime::from_timestamp_opt(res.date, 0)
+                .unwrap()
+                .format("%d-%m-%Y")
+                .to_string();
+            return view! {
+                <li>{format!("{} with date {}", res.title, date_formatted)}</li>
+            };
+        })
+        .collect_view();
 
-    for res in query_result {
-        let date_formated: String = NaiveDateTime::from_timestamp_opt(res.date, 0)
-            .unwrap()
-            .format("%d-%m-%Y")
-            .to_string();
-        str += format!("<li>{} with date {}</li>", res.title, date_formated).as_str();
-    }
-    str += "</ul>";
+    let html = render_to_string(|| {
+        view! {
+            <ul class="list-disc list-inside">
+                {items}
+            </ul>
+        }
+    });
 
-    return HttpResponse::Ok().content_type("text/html").body(str);
+    return HttpResponse::Ok()
+        .content_type("text/html")
+        .body(html.to_string());
 }
 
 #[post("/echo")]

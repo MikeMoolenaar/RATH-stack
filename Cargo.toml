@@ -16,3 +16,5 @@ chrono = "0.4.31"
 html-escape = "0.2.13"
 dotenv = "0.15.0"
 actix-extensible-rate-limit = "0.2.1"
+leptos = "0.5.2"
+
