@@ -27,8 +27,10 @@ npx tailwindcss -o output.css --watch
 - [x] Use Tailwind
 - [x] Use templating like Askama (like listing todos in a list), or maybe just format! idk yet
 - [x] Move from Artix to Axum
+- [ ] Implement Askama templating
+- [ ] Cleanup API and use Clippy for linting
 - [ ] Add navbar
 - [ ] Add a login page
-- [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust
+- [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust  
 ~~- [ ] Use Turso~~ Sqlx doesn't support turso...
 - [ ] Rename to RATH stack, Rust Actix Turso Hhtmx
