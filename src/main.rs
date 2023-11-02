@@ -35,9 +35,10 @@ async fn main() {
         .expect("Database should connect");
 
     // Setup static file service
+    let notfound_handler = ServeFile::new("static/404.html");
     let static_dir = ServeDir::new("static")
         .append_index_html_on_directories(true)
-        .not_found_service(ServeFile::new("src/static/404.html"));
+        .not_found_service(notfound_handler.clone());
 
     // Setup rate limiting
     let governor_conf = Box::new(
@@ -54,8 +55,10 @@ async fn main() {
         .nest_service("/static", static_dir)
         .route("/", get(routes::index))
         .route("/todos", post(routes::create_todo))
+        .route("/login", get(routes::login))
         .route("/json", get(routes::json))
         .route("/json-list", get(routes::json_list))
+        .fallback_service(notfound_handler)
         .layer(
             ServiceBuilder::new()
                 .layer(HandleErrorLayer::new(|e: BoxError| async move {

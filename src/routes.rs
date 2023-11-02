@@ -14,12 +14,11 @@ pub struct IndexTemplate {
 }
 
 pub async fn index(State(data): State<Arc<AppState>>) -> IndexTemplate {
-
-    let query_result: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
+    let todos: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
         .fetch_all(&data.db)
         .await
         .unwrap();
-    return IndexTemplate { todos: query_result };
+    return IndexTemplate { todos };
 }
 
 
@@ -48,38 +47,14 @@ pub async fn create_todo(
 
     return Ok(format!("Todo item '{}' succesfuly added", title_clone));
 }
-
-/*
-pub async fn get_todos(State(data): State<Arc<AppState>>) -> Html<String> {
-    let query_result: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
-        .fetch_all(&data.db)
-        .await
-        .unwrap();
-
-    let items = query_result
-        .iter()
-        .map(|res| {
-            let date_formatted: String = NaiveDateTime::from_timestamp_opt(res.date, 0)
-                .unwrap()
-                .format("%d-%m-%Y")
-                .to_string();
-            return view! {
-                <li>{format!("{} with date {}", res.title, date_formatted)}</li>
-            };
-        })
-        .collect_view();
-
-    let html = render_to_string(|| {
-        view! {
-            <ul class="list-disc list-inside">
-                {items}
-            </ul>
-        }
-    });
-
-    return Html(html.to_string());
+#[derive(Template)]
+#[template(path = "login.html")]
+pub struct LoginTemplate {
+    // TODO
 }
-*/
+pub async fn login() -> LoginTemplate {
+    return LoginTemplate {};
+}
 
 pub async fn json() -> Json<Info> {
     return Json(Info {

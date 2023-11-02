@@ -14,10 +14,9 @@ Run:
 ```sh
 cargo run
 # Or rerun when any non-static file changes (-x) and clear console (-c)
-cargo watch -c -x run -i src/static/
+cargo watch -c -x run -i /static
 
-cd src/static
-npx tailwindcss -o output.css --watch
+tailwindcss -c static/tailwind.config.js -o static/output.css --watch
 ```
 
 ## TODO
