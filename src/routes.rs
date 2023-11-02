@@ -1,35 +1,27 @@
 use crate::models::*;
 use crate::AppState;
 use axum::extract::State;
-use axum::{http::StatusCode, response::Html, response::IntoResponse, response::Json, Form};
-use chrono::NaiveDateTime;
-use leptos::ssr::render_to_string;
-use leptos::{view, CollectView, IntoView};
+use axum::{http::StatusCode, response::IntoResponse, response::Json, Form};
 use rand::{distributions::Alphanumeric, Rng};
 use std::sync::Arc;
+use askama::Template;
+use crate::filters::*;
 
-pub async fn index() -> Html<String> {
-    let html = render_to_string(|| {
-        view! {
-            <p>
-            Hello world!<br/>
-            "You want to go to "<a href="/static/">static</a>" right?"
-            </p>
-        }
-    });
-
-    return Html(html.to_string());
+#[derive(Template)]
+#[template(path = "home.html")]
+pub struct IndexTemplate {
+    todos: Vec<TodoItem>,
 }
 
-pub async fn test() -> Html<String> {
-    let html = render_to_string(|| {
-        view! {
-            <h1>Hi</h1>
-        }
-    });
+pub async fn index(State(data): State<Arc<AppState>>) -> IndexTemplate {
 
-    return Html(html.to_string());
+    let query_result: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
+        .fetch_all(&data.db)
+        .await
+        .unwrap();
+    return IndexTemplate { todos: query_result };
 }
+
 
 pub async fn create_todo(
     State(data): State<Arc<AppState>>,
@@ -57,6 +49,7 @@ pub async fn create_todo(
     return Ok(format!("Todo item '{}' succesfuly added", title_clone));
 }
 
+/*
 pub async fn get_todos(State(data): State<Arc<AppState>>) -> Html<String> {
     let query_result: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
         .fetch_all(&data.db)
@@ -86,6 +79,7 @@ pub async fn get_todos(State(data): State<Arc<AppState>>) -> Html<String> {
 
     return Html(html.to_string());
 }
+*/
 
 pub async fn json() -> Json<Info> {
     return Json(Info {

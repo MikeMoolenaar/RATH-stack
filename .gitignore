@@ -1,4 +1,4 @@
 /target
 sqlite.db*
 **/node_modules
-/src/static/output.css
+/static/output.css

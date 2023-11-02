@@ -15,6 +15,7 @@ sqlx = { version = "0.7", features = [ "runtime-tokio", "sqlite" ] }
 chrono = "0.4.31"
 html-escape = "0.2.13"
 dotenv = "0.15.0"
-leptos = "0.5.2"
 tower_governor = "0.1.0"
 tower = "0.4.13"
+askama = { version = "0.12.1", features = ["with-axum"]}
+askama_axum = "0.3"

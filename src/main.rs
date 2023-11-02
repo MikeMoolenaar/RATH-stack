@@ -15,6 +15,7 @@ use tower_http::services::{ServeDir, ServeFile};
 mod models;
 mod routes;
 mod serde_converters;
+mod filters;
 
 pub struct AppState {
     db: SqlitePool,
@@ -34,7 +35,7 @@ async fn main() {
         .expect("Database should connect");
 
     // Setup static file service
-    let static_dir = ServeDir::new("src/static")
+    let static_dir = ServeDir::new("static")
         .append_index_html_on_directories(true)
         .not_found_service(ServeFile::new("src/static/404.html"));
 
@@ -52,8 +53,7 @@ async fn main() {
     let app = Router::new()
         .nest_service("/static", static_dir)
         .route("/", get(routes::index))
-        .route("/test", get(routes::test))
-        .route("/todos", post(routes::create_todo).get(routes::get_todos))
+        .route("/todos", post(routes::create_todo))
         .route("/json", get(routes::json))
         .route("/json-list", get(routes::json_list))
         .layer(
