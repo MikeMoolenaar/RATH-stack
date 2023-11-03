@@ -1,0 +1,10 @@
+printWidth: 600
+twigPrintWidth: 600
+plugins: ["/home/mike/git/actix-web-test/static/node_modules/prettier-plugin-django/out/index.js"]
+overrides:
+  - files: ["templates/*.html"]
+    options:
+      parser: melody
+twigMultiTags: ["with,endwith"]
+twigAlwaysBreakObjects: false
+twigSingleQuote: false

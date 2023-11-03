@@ -1,11 +1,13 @@
-use crate::models::*;
-use crate::AppState;
-use axum::extract::State;
-use axum::{http::StatusCode, response::IntoResponse, response::Json, Form};
+use crate::{filters::*, models::*, AppState};
+use askama::Template;
+use axum::{
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Json},
+    Form,
+};
 use rand::{distributions::Alphanumeric, Rng};
 use std::sync::Arc;
-use askama::Template;
-use crate::filters::*;
 
 #[derive(Template)]
 #[template(path = "home.html")]
@@ -21,28 +23,20 @@ pub async fn index(State(data): State<Arc<AppState>>) -> IndexTemplate {
     return IndexTemplate { todos };
 }
 
-
 pub async fn create_todo(
     State(data): State<Arc<AppState>>,
     Form(form): Form<TodoItem>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let title_clone = form.title.clone();
 
-    let query_result = sqlx::query!(
-        "INSERT INTO todos (title,date) VALUES (?, ?)",
-        form.title,
-        form.date
-    )
-    .execute(&data.db)
-    .await
-    .map_err(|err: sqlx::Error| err.to_string());
+    let query_result = sqlx::query!("INSERT INTO todos (title,date) VALUES (?, ?)", form.title, form.date)
+        .execute(&data.db)
+        .await
+        .map_err(|err: sqlx::Error| err.to_string());
 
     if let Err(err) = query_result {
         println!("Could not execute insert due to error: {}", err);
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            String::from("Unknown error"),
-        ));
+        return Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("Unknown error")));
     }
 
     return Ok(format!("Todo item '{}' succesfuly added", title_clone));

@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use html_escape;
+
 use serde::{Deserialize, Deserializer};
 
 pub fn date_to_timestamp<'de, D>(deserializer: D) -> Result<i64, D::Error>

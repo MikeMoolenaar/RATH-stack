@@ -1,21 +1,20 @@
 use axum::{
     error_handling::HandleErrorLayer,
     routing::{get, post},
-    BoxError, Router,
+    BoxError, Router
+
 };
 use dotenv::dotenv;
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
-use std::env;
-use std::net::SocketAddr;
-use std::sync::Arc;
+use std::{env, net::SocketAddr, sync::Arc};
 use tower::ServiceBuilder;
 use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::services::{ServeDir, ServeFile};
 
+mod filters;
 mod models;
 mod routes;
 mod serde_converters;
-mod filters;
 
 pub struct AppState {
     db: SqlitePool,
@@ -30,9 +29,7 @@ async fn main() {
     Sqlite::database_exists(&db_url)
         .await
         .expect("Database should exist, run `cargo sqlx database setup`");
-    let db_pool = SqlitePool::connect(&db_url)
-        .await
-        .expect("Database should connect");
+    let db_pool = SqlitePool::connect(&db_url).await.expect("Database should connect");
 
     // Setup static file service
     let notfound_handler = ServeFile::new("static/404.html");
@@ -61,16 +58,12 @@ async fn main() {
         .fallback_service(notfound_handler)
         .layer(
             ServiceBuilder::new()
-                .layer(HandleErrorLayer::new(|e: BoxError| async move {
-                    display_error(e)
-                }))
+                .layer(HandleErrorLayer::new(|e: BoxError| async move { display_error(e) }))
                 .layer(GovernorLayer {
                     config: Box::leak(governor_conf),
                 }),
         )
-        .with_state(Arc::new(AppState {
-            db: db_pool.clone(),
-        }));
+        .with_state(Arc::new(AppState { db: db_pool.clone() }));
 
     println!("Server is running at http://localhost:8080");
 

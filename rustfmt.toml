@@ -1,0 +1,8 @@
+unstable_features = true
+edition = "2021"
+max_width = 120
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Auto"
+use_small_heuristics = "Default"
+imports_granularity = "Crate"

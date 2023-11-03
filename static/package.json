@@ -4,6 +4,8 @@
     "hyperscript.org": "^0.9.12"
   },
   "devDependencies": {
-    "daisyui": "^3.9.3"
+    "daisyui": "^3.9.3",
+    "prettier-plugin-django": "latest",
+    "prettier": "^2.0.0
   }
 }
