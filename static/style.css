@@ -1,0 +1,25 @@
+/* Fix weird animation on load  */
+.btn {
+  animation:unset;
+
+  &:active:focus {
+    animation: button-pop var(--animation-btn, 0.25s) ease-out;
+  }
+}
+
+/* Add animation on body swap */
+body #content {
+  opacity: 1;
+  transition: opacity 150ms ease-in-out;
+}
+body.htmx-request #content,
+body.htmx-swapping #content,
+body.htmx-settling #content  {
+  opacity: 0;
+}
+
+.input:focus {
+  outline-color: hsl(var(--pf));
+}
+
+a.toggled, a.toggled:hover { color: red !important; }

@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <link href="static/output.css" rel="stylesheet" />
+    <link href="static/style.css" rel="stylesheet" />
 
     <title>
       {% block title %}
@@ -22,8 +23,14 @@
     {% endblock %}
   </head>
 
-  <body>
-    <nav class="navbar bg-neutral" id="mavbar" hx-boost="true" hx-preserve="true">
+  <body hx-swap="innerHTML swap:100ms settle:100ms" _="
+          on load or htmx:pushedIntoHistory for a in <a/>
+            if a's @href is document.location.pathname
+              add .toggled to a
+            else
+              remove .toggled from a
+            end">
+    <nav class="navbar bg-neutral" id="mavbar" hx-boost="true" hx-indicator="body" hx-preserve="true">
       <div class="flex-1">
         <a class="btn btn-ghost normal-case text-xl" href="/">Todo's app</a>
       </div>
@@ -45,7 +52,7 @@
         </ul>
       </div>
     </nav>
-    <div id="content" class="p-4">
+    <div id="content" class="p-4 mt-3">
       {% block body %}
 
       {% endblock %}

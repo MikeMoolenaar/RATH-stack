@@ -43,11 +43,14 @@ pub async fn create_todo(
 }
 #[derive(Template)]
 #[template(path = "login.html")]
-pub struct LoginTemplate {
+pub struct LoginTemplate<'a> {
+    cur_url: &'a str
     // TODO
 }
-pub async fn login() -> LoginTemplate {
-    return LoginTemplate {};
+pub async fn login() -> LoginTemplate<'static> {
+    return LoginTemplate {
+        cur_url: "login"
+    };
 }
 
 pub async fn json() -> Json<Info> {
