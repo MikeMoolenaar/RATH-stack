@@ -1,2 +1,2 @@
-cargo +nightly fmt -- src/routes.rs
+cargo +nightly fmt
 cargo clippy -- -A clippy::needless_return

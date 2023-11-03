@@ -1,8 +1,7 @@
 use axum::{
     error_handling::HandleErrorLayer,
     routing::{get, post},
-    BoxError, Router
-
+    BoxError, Router,
 };
 use dotenv::dotenv;
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
