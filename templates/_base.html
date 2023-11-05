@@ -32,12 +32,12 @@
             end">
     <nav class="navbar bg-neutral" id="mavbar" hx-boost="true" hx-indicator="body" hx-preserve="true">
       <div class="flex-1">
-        <a class="btn btn-ghost normal-case text-xl" href="/">Todo's app</a>
+        <a class="btn btn-ghost normal-case text-xl {% if cur_page == '' %}toggled{% endif %}" href="/">Todo app</a>
       </div>
       <div class="flex-none">
         <ul class="menu menu-horizontal px-1">
           <li>
-            <a href="/login">Login</a>
+            <a class="{% if cur_page == 'login' %}toggled{% endif %}" href="/login">Login</a>
           </li>
           <li>
             <details>

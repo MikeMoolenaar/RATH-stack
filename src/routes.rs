@@ -12,6 +12,8 @@ use std::sync::Arc;
 
 pub fn render_html<S: Serialize>(template_name: &str, context: S, jinja_env: &Environment) -> Option<Html<String>> {
     // TODO Replace unwraps with better error handling
+    // TODO Use global jinja_env so we don't have to always pass it
+    //   https://github.com/photino/zino/blob/main/zino-core/src/view/minijinja.rs
     let tpl = jinja_env.get_template(template_name).unwrap();
     let content = tpl.render(context).unwrap();
     return Some(Html(content));
@@ -22,7 +24,11 @@ pub async fn index(State(state): State<Arc<AppState>>) -> Html<String> {
         .fetch_all(&state.db)
         .await
         .unwrap();
-    return render_html("home.html", context!(todos), &state.jinja).unwrap();
+    let context = context!(
+    todos,
+    cur_page => ""
+    );
+    return render_html("home.html", context, &state.jinja).unwrap();
 }
 
 pub async fn create_todo(
@@ -45,7 +51,7 @@ pub async fn create_todo(
 }
 
 pub async fn login(State(state): State<Arc<AppState>>) -> Html<String> {
-    return render_html("login.html", context!(cur_url => "login"), &state.jinja).unwrap();
+    return render_html("login.html", context!(cur_page => "login"), &state.jinja).unwrap();
 }
 
 pub async fn json() -> Json<Info> {
