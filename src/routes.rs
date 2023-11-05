@@ -26,7 +26,6 @@ pub async fn index(State(state): State<Arc<AppState>>) -> Html<String> {
         .unwrap();
     let context = context!(
     todos,
-    cur_page => ""
     );
     return render_html("home.html", context, &state.jinja).unwrap();
 }
@@ -51,7 +50,7 @@ pub async fn create_todo(
 }
 
 pub async fn login(State(state): State<Arc<AppState>>) -> Html<String> {
-    return render_html("login.html", context!(cur_page => "login"), &state.jinja).unwrap();
+    return render_html("login.html", context!(), &state.jinja).unwrap();
 }
 
 pub async fn json() -> Json<Info> {

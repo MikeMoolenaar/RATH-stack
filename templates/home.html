@@ -4,6 +4,8 @@
   Home
 {% endblock %}
 
+{% set cur_page = "" %}
+
 {% block body %}
   <h1 class="text-5xl font-bold mb-8">Todo pages</h1>
   <form hx-post="/todos" hx-target="find p" _="on htmx:afterRequest reset() me then send 'todo-item-added' to #todos">
