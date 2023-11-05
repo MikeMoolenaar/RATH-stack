@@ -1,36 +1,38 @@
-use crate::{filters::*, models::*, AppState};
-use askama::Template;
+use crate::{models::*, AppState};
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{IntoResponse, Json},
+    response::{Html, IntoResponse, Json},
     Form,
 };
+use minijinja::{context, Environment};
 use rand::{distributions::Alphanumeric, Rng};
+use serde::ser::Serialize;
 use std::sync::Arc;
 
-#[derive(Template)]
-#[template(path = "home.html")]
-pub struct IndexTemplate {
-    todos: Vec<TodoItem>,
+pub fn render_html<S: Serialize>(template_name: &str, context: S, jinja_env: &Environment) -> Option<Html<String>> {
+    // TODO Replace unwraps with better error handling
+    let tpl = jinja_env.get_template(template_name).unwrap();
+    let content = tpl.render(context).unwrap();
+    return Some(Html(content));
 }
 
-pub async fn index(State(data): State<Arc<AppState>>) -> IndexTemplate {
+pub async fn index(State(state): State<Arc<AppState>>) -> Html<String> {
     let todos: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
-        .fetch_all(&data.db)
+        .fetch_all(&state.db)
         .await
         .unwrap();
-    return IndexTemplate { todos };
+    return render_html("home.html", context!(todos), &state.jinja).unwrap();
 }
 
 pub async fn create_todo(
-    State(data): State<Arc<AppState>>,
+    State(state): State<Arc<AppState>>,
     Form(form): Form<TodoItem>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let title_clone = form.title.clone();
 
     let query_result = sqlx::query!("INSERT INTO todos (title,date) VALUES (?, ?)", form.title, form.date)
-        .execute(&data.db)
+        .execute(&state.db)
         .await
         .map_err(|err: sqlx::Error| err.to_string());
 
@@ -41,16 +43,9 @@ pub async fn create_todo(
 
     return Ok(format!("Todo item '{}' succesfuly added", title_clone));
 }
-#[derive(Template)]
-#[template(path = "login.html")]
-pub struct LoginTemplate<'a> {
-    cur_url: &'a str
-    // TODO
-}
-pub async fn login() -> LoginTemplate<'static> {
-    return LoginTemplate {
-        cur_url: "login"
-    };
+
+pub async fn login(State(state): State<Arc<AppState>>) -> Html<String> {
+    return render_html("login.html", context!(cur_url => "login"), &state.jinja).unwrap();
 }
 
 pub async fn json() -> Json<Info> {

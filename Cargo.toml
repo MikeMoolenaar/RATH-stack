@@ -17,5 +17,4 @@ html-escape = "0.2.13"
 dotenv = "0.15.0"
 tower_governor = "0.1.0"
 tower = "0.4.13"
-askama = { version = "0.12.1", features = ["with-axum"]}
-askama_axum = "0.3"
+minijinja = { version = "1.0.9", features = ["loader"] }

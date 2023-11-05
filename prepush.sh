@@ -1,2 +1,2 @@
 cargo +nightly fmt
-cargo clippy -- -A clippy::needless_return
+cargo clippy --fix --allow-dirty -- -A clippy::needless_return

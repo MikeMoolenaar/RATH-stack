@@ -29,7 +29,7 @@ tailwindcss -c static/tailwind.config.js -o static/output.css --watch
 - [x] Implement Askama templating
 - [x] Cleanup API and use Clippy for linting
 - [x] Add navbar
-- [ ] Look into MiniJinja
+- [x] Look into MiniJinja (and this https://stackoverflow.com/questions/39639264/django-highlight-current-page-in-navbar)
 - [ ] Add register page with validation
 - [ ] Add a lgoin page with validation
 - [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust

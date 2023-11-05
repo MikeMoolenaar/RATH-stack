@@ -1,9 +1,11 @@
+use crate::filters::filters::date_string;
 use axum::{
     error_handling::HandleErrorLayer,
     routing::{get, post},
     BoxError, Router,
 };
 use dotenv::dotenv;
+use minijinja::{path_loader, Environment};
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::{env, net::SocketAddr, sync::Arc};
 use tower::ServiceBuilder;
@@ -17,6 +19,7 @@ mod serde_converters;
 
 pub struct AppState {
     db: SqlitePool,
+    jinja: Environment<'static>,
 }
 
 #[tokio::main]
@@ -46,6 +49,10 @@ async fn main() {
             .unwrap(),
     );
 
+    let mut jinja = Environment::new();
+    jinja.set_loader(path_loader("templates"));
+    jinja.add_filter("date_string", date_string);
+
     // Setup router
     let app = Router::new()
         .nest_service("/static", static_dir)
@@ -62,7 +69,10 @@ async fn main() {
                     config: Box::leak(governor_conf),
                 }),
         )
-        .with_state(Arc::new(AppState { db: db_pool.clone() }));
+        .with_state(Arc::new(AppState {
+            db: db_pool.clone(),
+            jinja,
+        }));
 
     println!("Server is running at http://localhost:8080");
 
