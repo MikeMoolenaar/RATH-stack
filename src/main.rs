@@ -49,6 +49,7 @@ async fn main() {
             .unwrap(),
     );
 
+    // Setup templating
     let mut jinja = Environment::new();
     jinja.set_loader(path_loader("templates"));
     jinja.add_filter("date_string", date_string);

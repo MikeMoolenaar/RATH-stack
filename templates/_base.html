@@ -18,19 +18,24 @@
 
     <meta name="htmx.config.allowScriptTags" content="false" />
 
+    <meta name="htmx-config" content='{
+      "defaultSwapStyle": false,
+      "scrollIntoViewOnBoost": false
+      }'>
+
     {% block head %}
 
     {% endblock %}
   </head>
 
-  <body hx-swap="innerHTML swap:100ms settle:100ms" _="
+  <body _="
           on load or htmx:pushedIntoHistory for a in <a/>
             if a's @href is document.location.pathname
               add .toggled to a
             else
               remove .toggled from a
             end">
-    <nav class="navbar bg-neutral" id="mavbar" hx-boost="true" hx-indicator="body" hx-preserve="true">
+    <nav class="navbar bg-neutral" id="mavbar" hx-boost="true" hx-target="#content" hx-swap="innerHTML swap:100ms settle:100ms">
       <div class="flex-1">
         <a class="btn btn-ghost normal-case text-xl {% if cur_page == '' %}toggled{% endif %}" href="/">Todo app</a>
       </div>

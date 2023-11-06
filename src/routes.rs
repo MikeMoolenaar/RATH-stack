@@ -5,21 +5,31 @@ use axum::{
     response::{Html, IntoResponse, Json},
     Form,
 };
+use axum_htmx::HxBoosted;
 use minijinja::{context, Environment};
 use rand::{distributions::Alphanumeric, Rng};
 use serde::ser::Serialize;
 use std::sync::Arc;
 
-pub fn render_html<S: Serialize>(template_name: &str, context: S, jinja_env: &Environment) -> Option<Html<String>> {
+pub fn render_html<S: Serialize>(template_name: &str, context: S, jinja_env: &Environment, boosted: bool) -> Option<Html<String>> {
     // TODO Replace unwraps with better error handling
     // TODO Use global jinja_env so we don't have to always pass it
     //   https://github.com/photino/zino/blob/main/zino-core/src/view/minijinja.rs
     let tpl = jinja_env.get_template(template_name).unwrap();
-    let content = tpl.render(context).unwrap();
-    return Some(Html(content));
+
+    if boosted {
+        let title = tpl.eval_to_state(context!()).unwrap().render_block("title").unwrap();
+        let content = tpl.eval_to_state(context).unwrap().render_block("body").unwrap();
+        let combined = format!("<title>{}</title>\n{}", title, content);
+        return Some(Html(combined));
+
+    } else {
+        let content = tpl.render(context).unwrap();
+        return Some(Html(content));
+    }
 }
 
-pub async fn index(State(state): State<Arc<AppState>>) -> Html<String> {
+pub async fn index(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
     let todos: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
         .fetch_all(&state.db)
         .await
@@ -27,12 +37,12 @@ pub async fn index(State(state): State<Arc<AppState>>) -> Html<String> {
     let context = context!(
     todos,
     );
-    return render_html("home.html", context, &state.jinja).unwrap();
+    return render_html("home.html", context, &state.jinja, boosted).unwrap();
 }
 
 pub async fn create_todo(
     State(state): State<Arc<AppState>>,
-    Form(form): Form<TodoItem>,
+    Form(form): Form<TodoItem>
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let title_clone = form.title.clone();
 
@@ -49,8 +59,8 @@ pub async fn create_todo(
     return Ok(format!("Todo item '{}' succesfuly added", title_clone));
 }
 
-pub async fn login(State(state): State<Arc<AppState>>) -> Html<String> {
-    return render_html("login.html", context!(), &state.jinja).unwrap();
+pub async fn login(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
+    return render_html("login.html", context!(), &state.jinja, boosted).unwrap();
 }
 
 pub async fn json() -> Json<Info> {

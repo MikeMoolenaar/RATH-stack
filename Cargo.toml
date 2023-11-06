@@ -17,4 +17,5 @@ html-escape = "0.2.13"
 dotenv = "0.15.0"
 tower_governor = "0.1.0"
 tower = "0.4.13"
-minijinja = { version = "1.0.9", features = ["loader", "v_htmlescape"] }
+minijinja = { version = "1.0.9", features = ["loader", "v_htmlescape", "multi_template"] }
+axum-htmx = "0.4.0"

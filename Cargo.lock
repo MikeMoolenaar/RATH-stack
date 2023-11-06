@@ -127,6 +127,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-htmx"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe499e4aac3ca1bbe39d9155a4705510551c9bf30769c320ee513e1c3db96747"
+dependencies = [
+ "axum",
+]
+
+[[package]]
 name = "backtrace"
 version = "0.3.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1246,6 +1255,7 @@ name = "rust-plus-htmlx-playground"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "axum-htmx",
  "chrono",
  "dotenv",
  "html-escape",
