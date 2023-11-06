@@ -7,14 +7,14 @@
   }
 }
 
-/* Add animation on body swap */
-body #content {
+/* Add animation on content swap */
+#content {
   opacity: 1;
-  transition: opacity 150ms ease-in-out;
+  transition: opacity 100ms ease-in-out;
 }
-body.htmx-request #content,
-body.htmx-swapping #content,
-body.htmx-settling #content  {
+#content.htmx-request,
+#content.htmx-swapping,
+#content.htmx-settling {
   opacity: 0;
 }
 
