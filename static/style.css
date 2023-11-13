@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Fix weird animation on load  */
 .btn {
   animation:unset;

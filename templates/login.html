@@ -9,6 +9,11 @@
 {% block body %}
   <h1 class="text-5xl font-bold mb-8">Login</h1>
   <form>
-    <!-- TODO Create login form -->
+    <div class="mb-4">
+      <label target="email" class="label">Email</label>
+      <input id="email" type="email" class="input input-bordered w-full max-w-xs" name="email" required />
+    </div>
   </form>
+
+  <a href="register" class="link" hx-boost="true" hx-target="#content">Register here!</a>
 {% endblock %}

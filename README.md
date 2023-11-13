@@ -16,7 +16,9 @@ cargo run
 # Or rerun when any non-static file changes (-x) and clear console (-c)
 cargo watch -c -x run -i /static
 
-tailwindcss -c static/tailwind.config.js -o static/output.css --watch
+# Run tailwind in another window
+cd static
+npm run tailwind
 ```
 
 ## TODO
@@ -31,10 +33,11 @@ tailwindcss -c static/tailwind.config.js -o static/output.css --watch
 - [x] Add navbar
 - [x] Switch to MiniJinja (and this https://stackoverflow.com/questions/39639264/django-highlight-current-page-in-navbar)
 - [ ] Add register page with validation
-- [ ] Add a lgoin page with validation
+- [ ] Add a login page with validation
 - [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust
 ~~- [ ] Use Turso~~ Sqlx doesn't support turso...
 - [ ] Rename to RATH stack, Rust Actix Turso Hhtmx
+- [ ] use https://github.com/wilsonzlin/minify-html in a middleware: https://docs.rs/axum/latest/axum/middleware/fn.from_fn.html
 
 
 ## Handy commands

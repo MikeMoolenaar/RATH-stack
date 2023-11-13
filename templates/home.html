@@ -10,11 +10,11 @@
   <h1 class="text-5xl font-bold mb-8">Todo pages</h1>
   <form hx-post="/todos" hx-target="find p" _="on htmx:afterRequest reset() me then send 'todo-item-added' to #todos">
     <div class="mb-4">
-      <label class="block label-text">Title</label>
+      <label class="block">Title</label>
       <input type="text" class="input input-bordered w-full max-w-xs" name="title" required />
     </div>
     <div class="mb-4">
-      <label class="block label-text">Date</label>
+      <label class="block">Date</label>
       <input type="date" class="input input-bordered w-full max-w-xs" name="date" required />
     </div>
     <button class="btn btn-primary rounded-full">Submit</button>

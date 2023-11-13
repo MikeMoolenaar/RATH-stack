@@ -1,4 +1,4 @@
-use crate::{models::*, AppState};
+use crate::{models::*, render_html::render_html, AppState};
 use axum::{
     extract::State,
     http::StatusCode,
@@ -6,43 +6,22 @@ use axum::{
     Form,
 };
 use axum_htmx::HxBoosted;
-use minijinja::{context, Environment};
+use minijinja::context;
 use rand::{distributions::Alphanumeric, Rng};
-use serde::ser::Serialize;
 use std::sync::Arc;
-
-pub fn render_html<S: Serialize>(template_name: &str, context: S, jinja_env: &Environment, boosted: bool) -> Option<Html<String>> {
-    // TODO Replace unwraps with better error handling
-    // TODO Use global jinja_env so we don't have to always pass it
-    //   https://github.com/photino/zino/blob/main/zino-core/src/view/minijinja.rs
-    let tpl = jinja_env.get_template(template_name).unwrap();
-
-    if boosted {
-        let title = tpl.eval_to_state(context!()).unwrap().render_block("title").unwrap();
-        let content = tpl.eval_to_state(context).unwrap().render_block("body").unwrap();
-        let combined = format!("<title>{}</title>\n{}", title, content);
-        return Some(Html(combined));
-
-    } else {
-        let content = tpl.render(context).unwrap();
-        return Some(Html(content));
-    }
-}
 
 pub async fn index(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
     let todos: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
         .fetch_all(&state.db)
         .await
         .unwrap();
-    let context = context!(
-    todos,
-    );
+    let context = context!(todos,);
     return render_html("home.html", context, &state.jinja, boosted).unwrap();
 }
 
 pub async fn create_todo(
     State(state): State<Arc<AppState>>,
-    Form(form): Form<TodoItem>
+    Form(form): Form<TodoItem>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let title_clone = form.title.clone();
 
@@ -82,4 +61,14 @@ pub async fn json_list() -> Json<Vec<Info>> {
         vec.push(Info { name: s, age: i });
     }
     return Json(vec);
+}
+
+pub async fn handle_404(
+    State(state): State<Arc<AppState>>,
+    HxBoosted(boosted): HxBoosted,
+) -> (StatusCode, Html<String>) {
+    (
+        StatusCode::OK,
+        render_html("404.html", (), &state.jinja, boosted).unwrap(),
+    )
 }

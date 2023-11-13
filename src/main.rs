@@ -1,4 +1,4 @@
-use crate::filters::filters::date_string;
+use crate::{filters::filters::date_string, routes::handle_404};
 use axum::{
     error_handling::HandleErrorLayer,
     routing::{get, post},
@@ -10,10 +10,11 @@ use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use std::{env, net::SocketAddr, sync::Arc};
 use tower::ServiceBuilder;
 use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::services::ServeDir;
 
 mod filters;
 mod models;
+mod render_html;
 mod routes;
 mod serde_converters;
 
@@ -33,11 +34,13 @@ async fn main() {
         .expect("Database should exist, run `cargo sqlx database setup`");
     let db_pool = SqlitePool::connect(&db_url).await.expect("Database should connect");
 
+    // Setup templating
+    let mut jinja = Environment::new();
+    jinja.set_loader(path_loader("templates"));
+    jinja.add_filter("date_string", date_string);
+
     // Setup static file service
-    let notfound_handler = ServeFile::new("static/404.html");
-    let static_dir = ServeDir::new("static")
-        .append_index_html_on_directories(true)
-        .not_found_service(notfound_handler.clone());
+    let static_dir = ServeDir::new("static").append_index_html_on_directories(true);
 
     // Setup rate limiting
     let governor_conf = Box::new(
@@ -49,11 +52,6 @@ async fn main() {
             .unwrap(),
     );
 
-    // Setup templating
-    let mut jinja = Environment::new();
-    jinja.set_loader(path_loader("templates"));
-    jinja.add_filter("date_string", date_string);
-
     // Setup router
     let app = Router::new()
         .nest_service("/static", static_dir)
@@ -62,7 +60,7 @@ async fn main() {
         .route("/login", get(routes::login))
         .route("/json", get(routes::json))
         .route("/json-list", get(routes::json_list))
-        .fallback_service(notfound_handler)
+        .fallback(handle_404)
         .layer(
             ServiceBuilder::new()
                 .layer(HandleErrorLayer::new(|e: BoxError| async move { display_error(e) }))
