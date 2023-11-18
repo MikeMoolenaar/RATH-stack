@@ -14,7 +14,7 @@
 /* Add animation on content swap */
 #content {
   opacity: 1;
-  transition: opacity 100ms ease-in-out;
+  transition: opacity 50ms ease-in-out;
 }
 #content.htmx-request,
 #content.htmx-swapping,
