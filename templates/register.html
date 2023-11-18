@@ -1,0 +1,30 @@
+{% extends "_base.html" %}
+
+{% block title %}
+  Register
+{% endblock %}
+
+{% set cur_page = "login" %}
+
+{% block body %}
+  <h1 class="text-5xl font-bold mb-8">Register</h1>
+  <form>
+    <div class="mb-4">
+      <label target="email" class="label">Email</label>
+      <input id="email" type="email" class="input input-bordered w-full max-w-xs" name="email" required />
+    </div>
+    <div class="mb-4">
+      <label target="password" class="label">Password</label>
+      <input id="password" type="password" class="input input-bordered w-full max-w-xs" name="password" required />
+    </div>
+    <div class="mb-4">
+      <label target="password2" class="label">Repeat password</label>
+      <input id="password2" type="password" class="input input-bordered w-full max-w-xs" name="password" required />
+    </div>
+    <div class="mb-4">
+      <button class="btn btn-primary" type="submit">Register</button>
+    </div>
+  </form>
+
+  <a href="register" class="link" hx-boost="true" hx-target="#content">Register here!</a>
+{% endblock %}

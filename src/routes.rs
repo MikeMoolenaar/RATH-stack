@@ -42,6 +42,9 @@ pub async fn login(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoo
     return render_html("login.html", context!(), &state.jinja, boosted).unwrap();
 }
 
+pub async fn register(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
+    return render_html("register.html", context!(), &state.jinja, boosted).unwrap();
+}
 pub async fn json() -> Json<Info> {
     return Json(Info {
         name: String::from("Mike"),

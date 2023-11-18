@@ -19,3 +19,4 @@ tower_governor = "0.1.0"
 tower = "0.4.13"
 minijinja = { version = "1.0.9", features = ["loader", "v_htmlescape", "multi_template"] }
 axum-htmx = "0.4.0"
+tower-livereload = "0.8.2"
