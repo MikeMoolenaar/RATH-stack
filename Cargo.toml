@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.6.20"
+axum = { version = "0.6.20", features = ["form"] }
 tokio = { version = "1.33.0", features = ["full"] }
 tower-http = { version = "0.4.4", features = ["fs"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -20,3 +20,5 @@ tower = "0.4.13"
 minijinja = { version = "1.0.9", features = ["loader", "v_htmlescape", "multi_template"] }
 axum-htmx = "0.4.0"
 tower-livereload = "0.8.2"
+argon2 = "0.5.2"
+tower-cookies = "0.9.0"

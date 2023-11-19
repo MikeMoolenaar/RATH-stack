@@ -11,6 +11,16 @@ pub struct TodoItem {
     pub date: i64,
 }
 
+#[derive(Serialize, sqlx::FromRow)]
+pub struct User {
+    #[serde(default)]
+    pub id: i64,
+    pub email: String,
+    pub password: String,
+    #[serde(default)]
+    pub created_at: i64,
+}
+
 #[derive(Serialize)]
 pub struct Info {
     pub name: String,

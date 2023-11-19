@@ -8,9 +8,9 @@ use axum::{
 use dotenv::dotenv;
 use minijinja::{path_loader, Environment};
 use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
-use std::time::Duration;
-use std::{env, net::SocketAddr, sync::Arc};
+use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use tower::ServiceBuilder;
+use tower_cookies::CookieManagerLayer;
 use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::services::ServeDir;
 use tower_livereload::LiveReloadLayer;
@@ -64,8 +64,8 @@ async fn main() {
         .nest_service("/static", static_dir)
         .route("/", get(routes::index))
         .route("/todos", post(routes::create_todo))
-        .route("/login", get(routes::login))
-        .route("/register", get(routes::register))
+        .route("/login", get(routes::login_get).post(routes::login_post))
+        .route("/register", get(routes::register_get).post(routes::register_post))
         .route("/json", get(routes::json))
         .route("/json-list", get(routes::json_list))
         .fallback(handle_404)
@@ -74,6 +74,7 @@ async fn main() {
                 .request_predicate(not_htmx_predicate)
                 .reload_interval(Duration::from_millis(100)),
         )
+        .layer(CookieManagerLayer::new())
         .layer(
             ServiceBuilder::new()
                 .layer(HandleErrorLayer::new(|e: BoxError| async move { display_error(e) }))
