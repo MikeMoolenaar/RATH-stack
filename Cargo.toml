@@ -21,4 +21,5 @@ minijinja = { version = "1.0.9", features = ["loader", "v_htmlescape", "multi_te
 axum-htmx = "0.4.0"
 tower-livereload = "0.8.2"
 argon2 = "0.5.2"
-tower-cookies = "0.9.0"
+tower-sessions = { version = "0.6.0", features = ["sqlite-store", "deletion-task"] }
+time = "0.3.30"

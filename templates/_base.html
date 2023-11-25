@@ -35,19 +35,22 @@
       </div>
       <div class="flex-none">
         <ul class="menu menu-horizontal px-1">
+          {% if not user %}
           <li>
             <a class="{% if cur_page == 'login' %}toggled{% endif %}" href="/login">Login</a>
           </li>
+          {% else %}
           <li>
             <details>
-              <summary>More options</summary>
+              <summary>{{ user.email }}</summary>
               <ul class="p-2 bg-base-100">
                 <li>
-                  <a>hi</a>
+                  <a hx-post="/logout">logout</a>
                 </li>
               </ul>
             </details>
           </li>
+          {% endif %}
         </ul>
       </div>
     </nav>

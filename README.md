@@ -34,7 +34,7 @@ npm run tailwind
 - [x] Switch to MiniJinja (and this https://stackoverflow.com/questions/39639264/django-highlight-current-page-in-navbar)
 - [x] Add register page with validation
 - [x] Add a login page with validation
-- [ ] Implement authentication with session cookie
+- [x] Implement authentication with session cookie
 - [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust
 ~~- [ ] Use Turso~~ Sqlx doesn't support turso...
 - [ ] Rename to RATH stack, Rust Actix Turso Hhtmx

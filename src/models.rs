@@ -9,9 +9,11 @@ pub struct TodoItem {
     pub title: String,
     #[serde(deserialize_with = "serde_converters::date_to_timestamp")]
     pub date: i64,
+    #[serde(default)]
+    pub user_id: i64,
 }
 
-#[derive(Serialize, sqlx::FromRow)]
+#[derive(Serialize, Deserialize, sqlx::FromRow)]
 pub struct User {
     #[serde(default)]
     pub id: i64,

@@ -6,36 +6,53 @@ use argon2::{
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Json, Response},
+    response::{Html, IntoResponse, Json, Redirect},
     Form,
 };
-use axum_htmx::{HxBoosted, HxRefresh};
+use axum_htmx::{HxBoosted, HxLocation, HxRefresh};
 use minijinja::context;
 use rand::{distributions::Alphanumeric, Rng};
 use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
-use tower_cookies::cookie::time::Duration as CookieDuration;
-use tower_cookies::{Cookie, Cookies};
+use tower_sessions::Session;
 
-pub async fn index(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
-    let todos: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos")
+pub async fn index(
+    session: Session,
+    State(state): State<Arc<AppState>>,
+    HxBoosted(boosted): HxBoosted,
+) -> impl IntoResponse {
+    let session_user = session.get::<User>("user").unwrap();
+    if session_user.is_none() {
+        return Redirect::temporary("/login").into_response();
+    }
+    let user = session_user.unwrap();
+    let todos: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos WHERE user_id = ?", user.id)
         .fetch_all(&state.db)
         .await
         .unwrap();
-    let context = context!(todos,);
-    return render_html("home.html", context, &state.jinja, boosted).unwrap();
+    let context = context!(todos, user);
+    return render_html("home.html", context, &state.jinja, boosted)
+        .unwrap()
+        .into_response();
 }
 
 pub async fn create_todo(
+    session: Session,
     State(state): State<Arc<AppState>>,
     Form(form): Form<TodoItem>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let title_clone = form.title.clone();
+    let user = session.get::<User>("user").unwrap().unwrap();
 
-    let query_result = sqlx::query!("INSERT INTO todos (title,date) VALUES (?, ?)", form.title, form.date)
-        .execute(&state.db)
-        .await
-        .map_err(|err: sqlx::Error| err.to_string());
+    let query_result = sqlx::query!(
+        "INSERT INTO todos (title,date,user_id) VALUES (?, ?, ?)",
+        form.title,
+        form.date,
+        user.id
+    )
+    .execute(&state.db)
+    .await
+    .map_err(|err: sqlx::Error| err.to_string());
 
     if let Err(err) = query_result {
         println!("Could not execute insert due to error: {}", err);
@@ -52,7 +69,7 @@ pub struct LoginForm {
 }
 
 pub async fn login_post(
-    cookies: Cookies,
+    session: Session,
     State(state): State<Arc<AppState>>,
     Form(form): Form<LoginForm>,
 ) -> impl IntoResponse {
@@ -72,7 +89,7 @@ pub async fn login_post(
     if user.is_none() {
         errors.insert("general", "Invalid email or password");
         return (
-            HxRefresh(false),
+            None,
             render_html("login.html", context! { errors, values }, &state.jinja, true).unwrap(),
         );
     }
@@ -87,26 +104,22 @@ pub async fn login_post(
     if !password_matches {
         errors.insert("general", "Invalid email or password");
         return (
-            HxRefresh(false),
+            None,
             render_html("login.html", context! { errors, values }, &state.jinja, true).unwrap(),
         );
     }
 
-    // set cookie
-    // TODO handle sessions correctly
-    let cookie = Cookie::build("user_id", user.id.to_string())
-        .path("/")
-        .secure(true)
-        .http_only(true)
-        .max_age(CookieDuration::days(30))
-        .finish();
-    cookies.add(cookie);
-
-    return (HxRefresh(true), Html("".to_string()));
+    session.insert("user", user).unwrap();
+    return (Some(HxLocation("/".parse().unwrap())), Html("".to_string()));
 }
 
 pub async fn login_get(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
     return render_html("login.html", context!(), &state.jinja, boosted).unwrap();
+}
+
+pub async fn logout(session: Session) -> impl IntoResponse {
+    session.remove::<User>("user").unwrap();
+    return (HxLocation("/login".parse().unwrap()), "");
 }
 
 #[derive(Deserialize)]
