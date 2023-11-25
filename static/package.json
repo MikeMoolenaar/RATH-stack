@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "autoprefixer": "^10.4.16",
-    "htmx.org": "^1.9.8",
+    "htmx.org": "^1.9.9",
     "hyperscript.org": "^0.9.12"
   },
   "devDependencies": {

@@ -1,7 +1,9 @@
-use crate::{filters::filters::date_string, routes::handle_404};
+use crate::{
+    filters::filters::date_string,
+};
 use axum::{
     error_handling::HandleErrorLayer,
-    http::{Request, StatusCode},
+    http::{header, HeaderValue, Request, StatusCode},
     routing::{get, post},
     BoxError, Router,
 };
@@ -9,9 +11,9 @@ use dotenv::dotenv;
 use minijinja::{path_loader, Environment};
 use sqlx::{migrate::MigrateDatabase, Sqlite};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
-use tower::ServiceBuilder;
+use tower::{ServiceBuilder};
 use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
-use tower_http::services::ServeDir;
+use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
 use tower_livereload::LiveReloadLayer;
 use tower_sessions::{
     cookie::SameSite, session_store::ExpiredDeletion, sqlx::SqlitePool, Expiry, SessionManagerLayer, SqliteStore,
@@ -67,6 +69,13 @@ async fn main() {
     jinja.add_filter("date_string", date_string);
 
     // Setup static file service
+    let static_dir_dist = ServeDir::new("static/dist");
+    let static_dit_dist_service = ServiceBuilder::new()
+        .layer(SetResponseHeaderLayer::if_not_present(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("public, max-age=31536000, immutable"),
+        ))
+        .service(static_dir_dist);
     let static_dir = ServeDir::new("static").append_index_html_on_directories(true);
 
     // Setup rate limiting
@@ -82,7 +91,10 @@ async fn main() {
 
     // Setup router
     let app = Router::new()
+        .nest_service("/static/dist", static_dit_dist_service)
         .nest_service("/static", static_dir)
+        .fallback(routes::handle_static_404)
+        .route("/favicon.ico", get(routes::handle_static_404))
         .route("/", get(routes::index))
         .route("/todos", post(routes::create_todo))
         .route("/login", get(routes::login_get).post(routes::login_post))
@@ -91,7 +103,7 @@ async fn main() {
         .route("/json", get(routes::json))
         .route("/json-list", get(routes::json_list))
         .layer(session_layer)
-        .fallback(handle_404)
+        .fallback(routes::handle_page_404)
         .layer(
             LiveReloadLayer::new()
                 .request_predicate(not_htmx_predicate)
@@ -111,7 +123,7 @@ async fn main() {
 
     println!("Server is running at http://localhost:8080");
 
-    axum::Server::bind(&"127.0.0.1:8080".parse().unwrap())
+    axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .unwrap();

@@ -1333,7 +1333,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-plus-htmlx-playground"
+name = "rust-plus-htmx-playground"
 version = "0.1.0"
 dependencies = [
  "argon2",

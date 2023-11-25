@@ -1,5 +1,5 @@
 [package]
-name = "rust-plus-htmlx-playground"
+name = "rust-plus-htmx-playground"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 axum = { version = "0.6.20", features = ["form"] }
 tokio = { version = "1.33.0", features = ["full"] }
-tower-http = { version = "0.4.4", features = ["fs"] }
+tower-http = { version = "0.4.4", features = ["fs","set-header"] }
 serde = { version = "1.0", features = ["derive"] }
 rand = "0.8"
 sqlx = { version = "0.7", features = [ "runtime-tokio", "sqlite" ] }

@@ -35,8 +35,11 @@ npm run tailwind
 - [x] Add register page with validation
 - [x] Add a login page with validation
 - [x] Implement authentication with session cookie
-- [ ] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust
+- [x] Deploy with docker to fly.io https://github.com/fly-apps/hello-rust
 ~~- [ ] Use Turso~~ Sqlx doesn't support turso...
+- [x] Make a script that extracts htmx and hyperscript
+- [x] Setup caching of htmx and hyperscript scripts properly
+- [ ] Use the correct http status codes in login and register
 - [ ] Rename to RATH stack, Rust Actix Turso Hhtmx
 - [ ] use https://github.com/wilsonzlin/minify-html in a middleware: https://docs.rs/axum/latest/axum/middleware/fn.from_fn.html
 

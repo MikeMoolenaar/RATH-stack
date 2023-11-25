@@ -2,3 +2,4 @@
 sqlite.db*
 **/node_modules
 /static/output.css
+/static/dist

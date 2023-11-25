@@ -1,0 +1,7 @@
+# flyctl launch added from .gitignore
+target
+**/sqlite.db*
+# TODO
+#**/**/node_modules
+#static/output.css
+fly.toml

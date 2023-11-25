@@ -9,7 +9,7 @@ use axum::{
     response::{Html, IntoResponse, Json, Redirect},
     Form,
 };
-use axum_htmx::{HxBoosted, HxLocation, HxRefresh};
+use axum_htmx::{HxBoosted, HxLocation};
 use minijinja::context;
 use rand::{distributions::Alphanumeric, Rng};
 use serde::Deserialize;
@@ -213,7 +213,11 @@ pub async fn json_list() -> Json<Vec<Info>> {
     return Json(vec);
 }
 
-pub async fn handle_404(
+pub async fn handle_static_404() -> (StatusCode, &'static str) {
+    (StatusCode::NOT_FOUND, "Not found")
+}
+
+pub async fn handle_page_404(
     State(state): State<Arc<AppState>>,
     HxBoosted(boosted): HxBoosted,
 ) -> (StatusCode, Html<String>) {

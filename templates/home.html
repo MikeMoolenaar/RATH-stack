@@ -22,7 +22,7 @@
   </form>
 
   <h3 class="mt-4">Todo items</h3>
-  <ul class="list-disc list-inside" id="todos" hx-trigger="todo-item-added" hx-get="/" hx-select="#todos" hx-swap="outerHTML">
+  <ul class="list-disc list-inside" id="todos" hx-trigger="todo-item-added" hx-headers='{"HX-Boosted":"true"}' hx-get="/" hx-select="#todos" hx-swap="outerHTML">
     {% for todo in todos %}
       <li>{{ todo.title }} with date {{ todo.date|date_string }}</li>
     {% endfor %}
