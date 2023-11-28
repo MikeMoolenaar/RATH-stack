@@ -4,9 +4,10 @@ use argon2::{
     Argon2, PasswordVerifier,
 };
 use axum::{
+    debug_handler,
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Json, Redirect},
+    response::{Html, IntoResponse, Json, Redirect, Response},
     Form,
 };
 use axum_htmx::{HxBoosted, HxLocation};
@@ -16,11 +17,8 @@ use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
 use tower_sessions::Session;
 
-pub async fn index(
-    session: Session,
-    State(state): State<Arc<AppState>>,
-    HxBoosted(boosted): HxBoosted,
-) -> impl IntoResponse {
+#[debug_handler]
+pub async fn index(session: Session, State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Response {
     let session_user = session.get::<User>("user").unwrap();
     if session_user.is_none() {
         return Redirect::temporary("/login").into_response();
@@ -72,7 +70,7 @@ pub async fn login_post(
     session: Session,
     State(state): State<Arc<AppState>>,
     Form(form): Form<LoginForm>,
-) -> impl IntoResponse {
+) -> (Option<HxLocation>, Html<String>) {
     let mut errors = HashMap::new();
 
     let values = HashMap::from([("email", &form.email)]);
@@ -117,7 +115,7 @@ pub async fn login_get(State(state): State<Arc<AppState>>, HxBoosted(boosted): H
     return render_html("login.html", context!(), &state.jinja, boosted).unwrap();
 }
 
-pub async fn logout(session: Session) -> impl IntoResponse {
+pub async fn logout(session: Session) -> (HxLocation, &'static str) {
     session.remove::<User>("user").unwrap();
     return (HxLocation("/login".parse().unwrap()), "");
 }

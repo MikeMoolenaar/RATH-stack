@@ -1,7 +1,6 @@
-use crate::{
-    filters::filters::date_string,
-};
+use crate::filters::filters::date_string;
 use axum::{
+    body::Body,
     error_handling::HandleErrorLayer,
     http::{header, HeaderValue, Request, StatusCode},
     routing::{get, post},
@@ -10,9 +9,9 @@ use axum::{
 use dotenv::dotenv;
 use minijinja::{path_loader, Environment};
 use sqlx::{migrate::MigrateDatabase, Sqlite};
-use std::{env, net::SocketAddr, sync::Arc, time::Duration};
-use tower::{ServiceBuilder};
-use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
+use std::{env, sync::Arc, time::Duration};
+use tower::ServiceBuilder;
+use tower_governor::governor::GovernorConfigBuilder;
 use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
 use tower_livereload::LiveReloadLayer;
 use tower_sessions::{
@@ -30,7 +29,7 @@ pub struct AppState {
     jinja: Environment<'static>,
 }
 
-fn not_htmx_predicate<Body>(req: &Request<Body>) -> bool {
+fn not_htmx_predicate(req: &Request<Body>) -> bool {
     !req.headers().contains_key("hx-request")
 }
 
@@ -80,7 +79,7 @@ async fn main() {
 
     // Setup rate limiting
     // TODO use the tower layer https://github.com/tokio-rs/axum/discussions/987#discussioncomment-2678595
-    let governor_conf = Box::new(
+    let _governor_conf = Box::new(
         GovernorConfigBuilder::default()
             .per_millisecond(500)
             .burst_size(50)
@@ -90,7 +89,7 @@ async fn main() {
     );
 
     // Setup router
-    let app = Router::new()
+    let mut app = Router::new()
         .nest_service("/static/dist", static_dit_dist_service)
         .nest_service("/static", static_dir)
         .fallback(routes::handle_static_404)
@@ -104,27 +103,28 @@ async fn main() {
         .route("/json-list", get(routes::json_list))
         .layer(session_layer)
         .fallback(routes::handle_page_404)
-        .layer(
-            LiveReloadLayer::new()
-                .request_predicate(not_htmx_predicate)
-                .reload_interval(Duration::from_millis(100)),
-        )
-        .layer(
-            ServiceBuilder::new()
-                .layer(HandleErrorLayer::new(|e: BoxError| async move { display_error(e) }))
-                .layer(GovernorLayer {
-                    config: Box::leak(governor_conf),
-                }),
-        )
+        // .layer(
+        //     ServiceBuilder::new()
+        //         .layer(HandleErrorLayer::new(|e: BoxError| async move { display_error(e) }))
+        //         .layer(GovernorLayer {
+        //             config: Box::leak(governor_conf),
+        //         }),
+        // )
         .with_state(Arc::new(AppState {
             db: db_pool.clone(),
             jinja,
         }));
 
+    if cfg!(debug_assertions) {
+        app = app.layer(
+            LiveReloadLayer::new()
+                .request_predicate(not_htmx_predicate)
+                .reload_interval(Duration::from_millis(100)),
+        )
+    }
+
     println!("Server is running at http://localhost:8080");
 
-    axum::Server::bind(&"0.0.0.0:8080".parse().unwrap())
-        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
