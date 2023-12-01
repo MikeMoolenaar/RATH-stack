@@ -10,8 +10,7 @@ use dotenv::dotenv;
 use minijinja::{path_loader, Environment};
 use sqlx::{migrate::MigrateDatabase, Sqlite};
 use std::{env, sync::Arc, time::Duration};
-use tower::ServiceBuilder;
-use tower_governor::governor::GovernorConfigBuilder;
+use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
 use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
 use tower_livereload::LiveReloadLayer;
 use tower_sessions::{
@@ -78,15 +77,13 @@ async fn main() {
     let static_dir = ServeDir::new("static").append_index_html_on_directories(true);
 
     // Setup rate limiting
-    // TODO use the tower layer https://github.com/tokio-rs/axum/discussions/987#discussioncomment-2678595
-    let _governor_conf = Box::new(
-        GovernorConfigBuilder::default()
-            .per_millisecond(500)
-            .burst_size(50)
-            .use_headers()
-            .finish()
-            .unwrap(),
-    );
+    // This throttles requests to 10 per second
+    let rate_limit_config = ServiceBuilder::new()
+        .layer(HandleErrorLayer::new(|err: BoxError| async move {
+            (StatusCode::INTERNAL_SERVER_ERROR, format!("Unhandled error: {}", err))
+        }))
+        .layer(BufferLayer::new(1024))
+        .layer(RateLimitLayer::new(10, Duration::from_secs(1)));
 
     // Setup router
     let mut app = Router::new()
@@ -101,15 +98,9 @@ async fn main() {
         .route("/register", get(routes::register_get).post(routes::register_post))
         .route("/json", get(routes::json))
         .route("/json-list", get(routes::json_list))
+        .layer(rate_limit_config)
         .layer(session_layer)
         .fallback(routes::handle_page_404)
-        // .layer(
-        //     ServiceBuilder::new()
-        //         .layer(HandleErrorLayer::new(|e: BoxError| async move { display_error(e) }))
-        //         .layer(GovernorLayer {
-        //             config: Box::leak(governor_conf),
-        //         }),
-        // )
         .with_state(Arc::new(AppState {
             db: db_pool.clone(),
             jinja,

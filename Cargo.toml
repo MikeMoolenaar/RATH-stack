@@ -16,7 +16,7 @@ chrono = "0.4.31"
 html-escape = "0.2.13"
 dotenv = "0.15.0"
 tower_governor = "0.1.0"
-tower = "0.4.13"
+tower = { version = "0.4.13", features = ["buffer", "limit"] }
 minijinja = { version = "1.0.10", features = ["loader", "v_htmlescape", "multi_template"] }
 #axum-htmx = "0.4.0"
 axum-htmx = { git = "https://github.com/robertwayne/axum-htmx" }
