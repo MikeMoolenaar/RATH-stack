@@ -70,10 +70,8 @@ pub async fn login_post(
     session: Session,
     State(state): State<Arc<AppState>>,
     Form(form): Form<LoginForm>,
-) -> (Option<HxLocation>, Html<String>) {
+) -> (StatusCode, Option<HxLocation>, Html<String>) {
     let mut errors = HashMap::new();
-
-    let values = HashMap::from([("email", &form.email)]);
 
     let user = sqlx::query_as!(
         User,
@@ -87,8 +85,9 @@ pub async fn login_post(
     if user.is_none() {
         errors.insert("general", "Invalid email or password");
         return (
+            StatusCode::UNAUTHORIZED,
             None,
-            render_html("login.html", context! { errors, values }, &state.jinja, true).unwrap(),
+            render_block("login.html", "errors", context! { errors }, &state.jinja).unwrap(),
         );
     }
 
@@ -102,13 +101,18 @@ pub async fn login_post(
     if !password_matches {
         errors.insert("general", "Invalid email or password");
         return (
+            StatusCode::UNAUTHORIZED,
             None,
-            render_html("login.html", context! { errors, values }, &state.jinja, true).unwrap(),
+            render_block("login.html", "errors", context! { errors }, &state.jinja).unwrap(),
         );
     }
 
     session.insert("user", user).unwrap();
-    return (Some(HxLocation("/".parse().unwrap())), Html("".to_string()));
+    return (
+        StatusCode::OK,
+        Some(HxLocation::from_str("/").unwrap()),
+        Html(String::from("")),
+    );
 }
 
 pub async fn login_get(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
@@ -117,7 +121,7 @@ pub async fn login_get(State(state): State<Arc<AppState>>, HxBoosted(boosted): H
 
 pub async fn logout(session: Session) -> (HxLocation, &'static str) {
     session.remove::<User>("user").unwrap();
-    return (HxLocation("/login".parse().unwrap()), "");
+    return (HxLocation::from_str("/login").unwrap(), "");
 }
 
 #[derive(Deserialize)]
@@ -127,7 +131,10 @@ pub struct RegisterForm {
     password2: String,
 }
 
-pub async fn register_post(State(state): State<Arc<AppState>>, Form(form): Form<RegisterForm>) -> Html<String> {
+pub async fn register_post(
+    State(state): State<Arc<AppState>>,
+    Form(form): Form<RegisterForm>,
+) -> (StatusCode, Html<String>) {
     let mut errors = HashMap::new();
 
     let values = HashMap::from([
@@ -146,12 +153,14 @@ pub async fn register_post(State(state): State<Arc<AppState>>, Form(form): Form<
         .unwrap();
 
     if email_exists.is_some() {
-        return render_block("login.html", "alert_success", context!(), &state.jinja).unwrap();
+        errors.insert("email", "Email already exists");
     }
 
     if !errors.is_empty() {
-        // TODO Use error code 422
-        return render_html("register.html", context! { errors, values }, &state.jinja, true).unwrap();
+        return (
+            StatusCode::BAD_REQUEST,
+            render_html("register.html", context! { errors, values }, &state.jinja, true).unwrap(),
+        );
     }
 
     // Hash password
@@ -180,9 +189,15 @@ pub async fn register_post(State(state): State<Arc<AppState>>, Form(form): Form<
     if let Err(err) = query_result {
         println!("Could not execute insert due to error: {}", err);
         errors.insert("general", "Could not create user");
-        return render_html("register.html", context! { errors, values }, &state.jinja, true).unwrap();
+        return (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            render_html("register.html", context! { errors, values }, &state.jinja, true).unwrap(),
+        );
     } else {
-        return render_block("register.html", "alert_success", context!(), &state.jinja).unwrap();
+        return (
+            StatusCode::OK,
+            render_block("register.html", "alert_success", context!(), &state.jinja).unwrap(),
+        );
     }
 }
 

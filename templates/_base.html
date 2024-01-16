@@ -11,6 +11,7 @@
 
     <script src="static/dist/htmx-1.9.9.min.js"></script>
     <script src="static/dist/_hyperscript-0.9.12.min.js"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/response-targets.js"></script>
 
     <meta name="htmx-config" content='{
       "allowScriptTags": false,
@@ -28,7 +29,7 @@
               add .toggled to a
             else
               remove .toggled from a
-            end">
+            end" hx-ext="response-targets">
     <nav class="navbar bg-neutral" id="mavbar" hx-boost="true" hx-target="#content" hx-swap="innerHTML swap:100ms settle:100ms">
       <div class="flex-1">
         <a class="btn btn-ghost normal-case text-xl {% if cur_page == 'home' %}toggled{% endif %}" href="/">Todo app</a>
