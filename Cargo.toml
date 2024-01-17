@@ -23,3 +23,4 @@ tower-livereload = "0.9.1"
 argon2 = "0.5.2"
 tower-sessions = { version = "0.7.0", features = ["sqlite-store", "deletion-task"] }
 time = "0.3.30"
+minify-html = "0.15.0"
