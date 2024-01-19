@@ -8,10 +8,23 @@
 
 {% block body %}
   <h1 class="text-5xl font-bold mb-8">Register</h1>
-  <form id="result" hx-post="/register" hx-target-*="this" hx-disabled-elt="find button" hx-select="#result" hx-swap="morph" class="mb-8">
+  <form id="result" hx-post="/register" hx-target-400="this" hx-target-500="this" hx-disabled-elt="find button" hx-select="#result" hx-swap="morph" class="mb-8">
     <div class="mb-4">
-      <label target="email" class="label">Email</label>
-      <input id="email" type="email" class="input input-bordered w-full max-w-xs" name="email" value="{{ values.email if values }}" required />
+      <label target="email" class="label">
+        Email
+      </label>
+      <input id="email" type="email" class="input input-bordered w-full max-w-xs" name="email" value="{{ values.email if values }}"
+        minlength="4"
+        hx-validate="true"
+        hx-get="/register/check"
+        hx-params="email"
+        hx-trigger="keyup delay:500ms changed"
+        hx-target="next .text-error"
+        hx-indicator="next .loading"
+        hx-disabled-elt="unset"
+        hx-select="unset"
+        required />
+      <span class="htmx-indicator loading loading-spinner text-primary ms-4 align-end"></span>
       <p class="text-error">{{ errors.email if errors }}</p>
     </div>
     <div class="mb-4">
@@ -20,7 +33,8 @@
     </div>
     <div class="mb-4">
       <label target="password2" class="label">Repeat password</label>
-      <input id="password2" type="password" class="input input-bordered w-full max-w-xs" name="password2" value="{{ values.password2 if values }}" required _="on keyup if my value is not (value of #password) then me.setCustomValidity('Passwords don\'t match') else me.setCustomValidity('') end" />
+      <input id="password2" type="password" class="input input-bordered w-full max-w-xs" name="password2" value="{{ values.password2 if values }}" required
+        _="on keyup if my value is not (value of #password) then me.setCustomValidity('Passwords don\'t match') else me.setCustomValidity('') end" />
       <p class="text-error">{{ errors.password2 if errors }}</p>
     </div>
     <div class="mb-4">
@@ -34,6 +48,6 @@
 {% block alert_success %}
   <div id="result">
     <p>Registration successful!</p>
-    <a class="link" href="/login">Return to login</a>
+    <a class="link" href="/login" hx-boost="true" hx-target="#content">Return to login</a>
   </div>
 {% endblock %}

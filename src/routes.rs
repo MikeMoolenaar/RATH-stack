@@ -5,6 +5,7 @@ use argon2::{
 };
 use axum::{
     debug_handler,
+    extract::Query,
     extract::State,
     http::StatusCode,
     response::{Html, IntoResponse, Json, Redirect, Response},
@@ -125,6 +126,24 @@ pub async fn logout(session: Session) -> (HxLocation, &'static str) {
 }
 
 #[derive(Deserialize)]
+pub struct EmailForm {
+    email: String,
+}
+pub async fn register_check(State(state): State<Arc<AppState>>, query: Query<EmailForm>) -> (StatusCode, Html<String>) {
+    let email_exists = sqlx::query!("SELECT email FROM users WHERE email = ?", query.email)
+        .fetch_optional(&state.db)
+        .await
+        .unwrap();
+    if email_exists.is_some() {
+        return (
+            StatusCode::OK,
+            Html(String::from("<p class=\"text-error\">Email already exists</p>")),
+        );
+    }
+    return (StatusCode::OK, Html(String::from("<p class=\"text-error\"></p>")));
+}
+
+#[derive(Deserialize)]
 pub struct RegisterForm {
     email: String,
     password: String,
@@ -235,7 +254,7 @@ pub async fn handle_page_404(
     HxBoosted(boosted): HxBoosted,
 ) -> (StatusCode, Html<String>) {
     (
-        StatusCode::OK,
+        StatusCode::NOT_FOUND,
         render_html("404.html", (), &state.jinja, boosted).unwrap(),
     )
 }

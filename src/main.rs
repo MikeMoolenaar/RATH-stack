@@ -77,13 +77,15 @@ async fn main() {
     let static_dir = ServeDir::new("static").append_index_html_on_directories(true);
 
     // Setup rate limiting
-    // This throttles requests to 10 per second
+    // This throttles requests to 20 per second
+    // TODO use https://docs.rs/tower_governor/latest/tower_governor/index.html again
+    // because it uses ratelimiting per ip
     let rate_limit_config = ServiceBuilder::new()
         .layer(HandleErrorLayer::new(|err: BoxError| async move {
             (StatusCode::INTERNAL_SERVER_ERROR, format!("Unhandled error: {}", err))
         }))
         .layer(BufferLayer::new(1024))
-        .layer(RateLimitLayer::new(10, Duration::from_secs(1)));
+        .layer(RateLimitLayer::new(20, Duration::from_secs(1)));
 
     // Setup router
     let mut app = Router::new()
@@ -96,6 +98,7 @@ async fn main() {
         .route("/login", get(routes::login_get).post(routes::login_post))
         .route("/logout", post(routes::logout))
         .route("/register", get(routes::register_get).post(routes::register_post))
+        .route("/register/check", get(routes::register_check))
         .route("/json", get(routes::json))
         .route("/json-list", get(routes::json_list))
         .layer(rate_limit_config)
