@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# TODO should pick values from package.json
-HTMX_VERSION=1.9.10
-HYPERSCRIPT_VERSION=0.9.12
-IDIOMORPH_VERSION=0.3.0
+HTMX_VERSION=$(jq -r '.dependencies."htmx.org"' package.json)
+HYPERSCRIPT_VERSION=$(jq -r '.dependencies."hyperscript.org"' package.json)
+IDIOMORPH_VERSION=$(jq -r '.dependencies."idiomorph"' package.json)
 
 # This script copies static files to the dist folder to node_modules
 
