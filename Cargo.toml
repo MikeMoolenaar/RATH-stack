@@ -15,10 +15,10 @@ sqlx = { version = "0.7.3", features = [ "runtime-tokio", "sqlite" ] }
 chrono = "0.4.31"
 html-escape = "0.2.13"
 dotenv = "0.15.0"
-tower = { version = "0.4.13", features = ["buffer", "limit"] }
+tower = { version = "0.4.13" }
+tower_governor = { version = "0.3.0" }
 minijinja = { version = "1.0.10", features = ["loader", "v_htmlescape", "multi_template"] }
 axum-htmx = "0.5.0"
-# axum-htmx = { git = "https://github.com/robertwayne/axum-htmx" }
 tower-livereload = "0.9.1"
 argon2 = "0.5.2"
 tower-sessions = { version = "0.7.0", features = ["sqlite-store", "deletion-task"] }

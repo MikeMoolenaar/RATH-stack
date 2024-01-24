@@ -8,8 +8,10 @@ use axum::{
 use dotenv::dotenv;
 use minijinja::{path_loader, Environment};
 use sqlx::{migrate::MigrateDatabase, Sqlite};
-use std::{env, sync::Arc, time::Duration};
-use tower::{buffer::BufferLayer, limit::RateLimitLayer, ServiceBuilder};
+use std::{env, net::SocketAddr, sync::Arc, time::Duration};
+use tower::ServiceBuilder;
+use tower_governor::governor::GovernorConfigBuilder;
+use tower_governor::GovernorLayer;
 use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
 use tower_livereload::LiveReloadLayer;
 use tower_sessions::{
@@ -75,16 +77,26 @@ async fn main() {
         .service(static_dir_dist);
     let static_dir = ServeDir::new("static").append_index_html_on_directories(true);
 
-    // Setup rate limiting
-    // This throttles requests to 20 per second
-    // TODO use https://docs.rs/tower_governor/latest/tower_governor/index.html again
-    // because it uses ratelimiting per ip
-    let rate_limit_config = ServiceBuilder::new()
-        .layer(HandleErrorLayer::new(|err: BoxError| async move {
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("Unhandled error: {}", err))
-        }))
-        .layer(BufferLayer::new(1024))
-        .layer(RateLimitLayer::new(20, Duration::from_secs(1)));
+    // Setup rate throttling
+    // replenish one element every 500 milliseconds, up to 30 requests per ip
+    let governor_conf = Box::new(
+        GovernorConfigBuilder::default()
+            .per_millisecond(500)
+            .burst_size(30)
+            .use_headers()
+            .finish()
+            .unwrap(),
+    );
+    let governor_limiter = governor_conf.limiter().clone();
+    let interval = Duration::from_secs(60);
+    // a separate background task to clean up
+    std::thread::spawn(move || loop {
+        std::thread::sleep(interval);
+        governor_limiter.retain_recent();
+    });
+    let governor_layer = ServiceBuilder::new().layer(GovernorLayer {
+        config: Box::leak(governor_conf),
+    });
 
     // Setup router
     let mut app = Router::new()
@@ -92,7 +104,7 @@ async fn main() {
         .nest_service("/static", static_dir)
         .fallback(handle_static_404)
         .merge(routes::router())
-        .layer(rate_limit_config)
+        .layer(governor_layer)
         .layer(session_layer)
         .fallback(handle_page_404)
         .with_state(Arc::new(AppState {
@@ -111,5 +123,7 @@ async fn main() {
     println!("Server is running at http://localhost:8080");
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
+        .await
+        .unwrap();
 }

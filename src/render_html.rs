@@ -1,14 +1,9 @@
+use std::error::Error;
+
 use axum::response::Html;
 use minify_html::{minify, Cfg};
 use minijinja::{context, Environment};
 use serde::ser::Serialize;
-
-fn minify_html(html: &str) -> Html<String> {
-    let bytes = html.as_bytes();
-    let cfg = Cfg::spec_compliant();
-    let minified = minify(bytes, &cfg);
-    return Html(String::from_utf8(minified).unwrap());
-}
 
 pub fn render_html<S: Serialize>(
     template_name: &str,
@@ -16,19 +11,12 @@ pub fn render_html<S: Serialize>(
     jinja_env: &Environment,
     boosted: bool,
 ) -> Option<Html<String>> {
-    // TODO Replace unwraps with better error handling
-    // TODO Use global jinja_env so we don't have to always pass it
-    //   https://github.com/photino/zino/blob/main/zino-core/src/view/minijinja.rs
-    let tpl = jinja_env.get_template(template_name).unwrap();
-
-    if boosted {
-        let title = tpl.eval_to_state(context!()).unwrap().render_block("title").unwrap();
-        let content = tpl.eval_to_state(context).unwrap().render_block("body").unwrap();
-        let combined = format!("<title>{}</title>\n{}", title, content);
-        return Some(minify_html(&combined));
-    } else {
-        let content = tpl.render(context).unwrap();
-        return Some(minify_html(&content));
+    match render(template_name, "content", context, jinja_env, boosted) {
+        Ok(html) => Some(html),
+        Err(err) => {
+            println!("Error rendering html: {}", err);
+            return Html(String::from("Woopsie! Something broke!")).into();
+        }
     }
 }
 
@@ -38,10 +26,40 @@ pub fn render_block<S: Serialize>(
     context: S,
     jinja_env: &Environment,
 ) -> Option<Html<String>> {
-    let tpl = jinja_env.get_template(template_name).unwrap();
+    match render(template_name, block_name, context, jinja_env, false) {
+        Ok(html) => Some(html),
+        Err(err) => {
+            println!("Error rendering block: {}", err);
+            return Html(String::from("Woopsie! Something broke!")).into();
+        }
+    }
+}
 
-    let title = tpl.eval_to_state(context!()).unwrap().render_block("title").unwrap();
-    let content = tpl.eval_to_state(context).unwrap().render_block(block_name).unwrap();
-    let combined = format!("<title>{}</title>\n{}", title, content);
-    return Some(minify_html(&combined));
+fn render<S: Serialize>(
+    template_name: &str,
+    block_name: &str,
+    context: S,
+    jinja_env: &Environment,
+    boosted: bool,
+) -> Result<Html<String>, Box<dyn Error>> {
+    // TODO Use global jinja_env so we don't have to always pass it
+    //   https://github.com/photino/zino/blob/main/zino-core/src/view/minijinja.rs
+    let tpl = jinja_env.get_template(template_name)?;
+
+    if boosted {
+        let title = tpl.eval_to_state(context!())?.render_block("title")?;
+        let body = tpl.eval_to_state(context)?.render_block(block_name)?;
+        let content = format!("<title>{}</title>\n{}", title, body);
+        return Ok(minify_html(&content)?);
+    } else {
+        let content = tpl.render(context)?;
+        return Ok(minify_html(&content)?);
+    }
+}
+
+fn minify_html(html: &str) -> Result<Html<String>, std::string::FromUtf8Error> {
+    let bytes = html.as_bytes();
+    let cfg = Cfg::spec_compliant();
+    let minified = minify(bytes, &cfg);
+    return Ok(Html(String::from_utf8(minified)?));
 }
