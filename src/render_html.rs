@@ -6,7 +6,7 @@ use serde::ser::Serialize;
 fn minify_html(html: &str) -> Html<String> {
     let bytes = html.as_bytes();
     let cfg = Cfg::spec_compliant();
-    let minified = minify(&bytes, &cfg);
+    let minified = minify(bytes, &cfg);
     return Html(String::from_utf8(minified).unwrap());
 }
 

@@ -1,9 +1,8 @@
-use crate::filters::filters::date_string;
+use crate::{filters::*, routes::error_404::*};
 use axum::{
     body::Body,
     error_handling::HandleErrorLayer,
     http::{header, HeaderValue, Request, StatusCode},
-    routing::{get, post},
     BoxError, Router,
 };
 use dotenv::dotenv;
@@ -91,19 +90,11 @@ async fn main() {
     let mut app = Router::new()
         .nest_service("/static/dist", static_dit_dist_service)
         .nest_service("/static", static_dir)
-        .fallback(routes::handle_static_404)
-        .route("/favicon.ico", get(routes::handle_static_404))
-        .route("/", get(routes::index))
-        .route("/todos", post(routes::create_todo))
-        .route("/login", get(routes::login_get).post(routes::login_post))
-        .route("/logout", post(routes::logout))
-        .route("/register", get(routes::register_get).post(routes::register_post))
-        .route("/register/check", get(routes::register_check))
-        .route("/json", get(routes::json))
-        .route("/json-list", get(routes::json_list))
+        .fallback(handle_static_404)
+        .merge(routes::router())
         .layer(rate_limit_config)
         .layer(session_layer)
-        .fallback(routes::handle_page_404)
+        .fallback(handle_page_404)
         .with_state(Arc::new(AppState {
             db: db_pool.clone(),
             jinja,
