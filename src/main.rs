@@ -77,7 +77,7 @@ async fn main() {
         .service(static_dir_dist);
     let static_dir = ServeDir::new("static").append_index_html_on_directories(true);
 
-    // Setup rate throttling
+    // Setup rate limiting
     // replenish one element every 500 milliseconds, up to 30 requests per ip
     let governor_conf = Box::new(
         GovernorConfigBuilder::default()
