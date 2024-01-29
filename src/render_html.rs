@@ -11,7 +11,7 @@ pub fn render_html<S: Serialize>(
     jinja_env: &Environment,
     boosted: bool,
 ) -> Option<Html<String>> {
-    match render(template_name, "content", context, jinja_env, boosted) {
+    match render(template_name, "body", context, jinja_env, boosted) {
         Ok(html) => Some(html),
         Err(err) => {
             println!("Error rendering html: {}", err);
