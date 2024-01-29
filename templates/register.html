@@ -33,9 +33,17 @@
     </div>
     <div class="mb-4">
       <label target="password2" class="label">Repeat password</label>
-      <input id="password2" type="password" class="input input-bordered w-full max-w-xs" name="password2" value="{{ values.password2 if values }}" required
-        _="on keyup if my value is not (value of #password) then me.setCustomValidity('Passwords don\'t match') else me.setCustomValidity('') end" />
+      <input id="password2" type="password" class="input input-bordered w-full max-w-xs" name="password2" value="{{ values.password2 if values }}" required />
       <p class="text-error">{{ errors.password2 if errors }}</p>
+      <script>
+        htmx.on("#password2", "keyup", function() {
+          if (this.value !== document.getElementById("password").value) {
+            this.setCustomValidity("Passwords don't match");
+          } else {
+            this.setCustomValidity("");
+          }
+        });
+      </script>
     </div>
     <div class="mb-4">
       <button class="btn btn-primary" id="submit" type="submit">Register</button>

@@ -1,30 +1,11 @@
 {% extends "_base.html" %}
 
 {% block title %}
-  Home
+  Welcome!
 {% endblock %}
 
 {% set cur_page = "home" %}
 
 {% block body %}
-  <h1 class="text-5xl font-bold mb-8">Todo pages</h1>
-  <form hx-post="/todos" hx-target="find p" _="on htmx:afterRequest reset() me then send 'todo-item-added' to #todos">
-    <div class="mb-4">
-      <label class="block">Title</label>
-      <input type="text" class="input input-bordered w-full max-w-xs" name="title" required />
-    </div>
-    <div class="mb-4">
-      <label class="block">Date</label>
-      <input type="date" class="input input-bordered w-full max-w-xs" name="date" required />
-    </div>
-    <button class="btn btn-primary rounded-full">Submit</button>
-    <p></p>
-  </form>
-
-  <h3 class="mt-4">Todo items</h3>
-  <ul class="list-disc list-inside" id="todos" hx-trigger="todo-item-added" hx-headers='{"HX-Boosted":"true"}' hx-get="/" hx-select="#todos" hx-swap="outerHTML">
-    {% for todo in todos %}
-      <li>{{ todo.title }} with date {{ todo.date|date_string }}</li>
-    {% endfor %}
-  </ul>
+Welcome to the home page!!
 {% endblock %}

@@ -26,7 +26,7 @@ pub fn render_block<S: Serialize>(
     context: S,
     jinja_env: &Environment,
 ) -> Option<Html<String>> {
-    match render(template_name, block_name, context, jinja_env, false) {
+    match render(template_name, block_name, context, jinja_env, true) {
         Ok(html) => Some(html),
         Err(err) => {
             println!("Error rendering block: {}", err);
