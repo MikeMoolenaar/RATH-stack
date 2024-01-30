@@ -32,7 +32,7 @@
       let setLinks = function() {
         let links = document.querySelectorAll('nav a');
         for (let link of links) {
-          if (link.getAttribute('href') == document.location.pathname) {
+          if (link.getAttribute('href') === document.location.pathname) {
             link.classList.add('toggled');
           } else {
             link.classList.remove('toggled');
