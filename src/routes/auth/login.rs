@@ -7,8 +7,8 @@ use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
 use tower_sessions::Session;
 
-pub async fn login_get(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
-    return render_html("login.html", context!(), &state.jinja, boosted).unwrap();
+pub async fn login_get(State(_state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
+    return render_html("login.html", context!(), boosted).unwrap();
 }
 
 #[derive(Deserialize)]
@@ -38,7 +38,7 @@ pub async fn login_post(
         return (
             StatusCode::UNAUTHORIZED,
             None,
-            render_block("login.html", "errors", context! { errors }, &state.jinja).unwrap(),
+            render_block("login.html", "errors", context! { errors }).unwrap(),
         );
     }
 
@@ -54,7 +54,7 @@ pub async fn login_post(
         return (
             StatusCode::UNAUTHORIZED,
             None,
-            render_block("login.html", "errors", context! { errors }, &state.jinja).unwrap(),
+            render_block("login.html", "errors", context! { errors }).unwrap(),
         );
     }
 

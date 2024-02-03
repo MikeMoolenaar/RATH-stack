@@ -15,9 +15,7 @@ use tower_sessions::Session;
 pub async fn index(session: Session, State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Response {
     let session_user = session.get::<User>("user").unwrap();
     if session_user.is_none() {
-        return render_html("home.html", context!(), &state.jinja, boosted)
-            .unwrap()
-            .into_response();
+        return render_html("home.html", context!(), boosted).unwrap().into_response();
     }
     let user = session_user.unwrap();
     let todos: Vec<TodoItem> = sqlx::query_as!(TodoItem, "SELECT * FROM todos WHERE user_id = ?", user.id)
@@ -25,7 +23,7 @@ pub async fn index(session: Session, State(state): State<Arc<AppState>>, HxBoost
         .await
         .unwrap();
     let context = context!(todos, user);
-    return render_html("home_todos.html", context, &state.jinja, boosted)
+    return render_html("home_todos.html", context, boosted)
         .unwrap()
         .into_response();
 }

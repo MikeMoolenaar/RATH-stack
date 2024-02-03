@@ -9,8 +9,8 @@ use minijinja::context;
 use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
 
-pub async fn register_get(State(state): State<Arc<AppState>>, HxBoosted(boosted): HxBoosted) -> Html<String> {
-    return render_html("register.html", context!(), &state.jinja, boosted).unwrap();
+pub async fn register_get(HxBoosted(boosted): HxBoosted) -> Html<String> {
+    return render_html("register.html", context!(), boosted).unwrap();
 }
 
 #[derive(Deserialize)]
@@ -48,7 +48,7 @@ pub async fn register_post(
     if !errors.is_empty() {
         return (
             StatusCode::BAD_REQUEST,
-            render_html("register.html", context! { errors, values }, &state.jinja, true).unwrap(),
+            render_html("register.html", context! { errors, values }, true).unwrap(),
         );
     }
 
@@ -80,12 +80,12 @@ pub async fn register_post(
         errors.insert("general", "Could not create user");
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
-            render_html("register.html", context! { errors, values }, &state.jinja, true).unwrap(),
+            render_html("register.html", context! { errors, values }, true).unwrap(),
         );
     } else {
         return (
             StatusCode::OK,
-            render_block("register.html", "alert_success", context!(), &state.jinja).unwrap(),
+            render_block("register.html", "alert_success", context!()).unwrap(),
         );
     }
 }

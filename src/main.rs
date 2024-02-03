@@ -1,4 +1,4 @@
-use crate::{filters::*, routes::error_404::*};
+use crate::{filters::*, render_html::SHARED_JINJA_ENV, routes::error_404::*};
 use axum::{
     body::Body,
     error_handling::HandleErrorLayer,
@@ -10,8 +10,7 @@ use minijinja::{path_loader, Environment};
 use sqlx::{migrate::MigrateDatabase, Sqlite};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use tower::ServiceBuilder;
-use tower_governor::governor::GovernorConfigBuilder;
-use tower_governor::GovernorLayer;
+use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
 use tower_livereload::LiveReloadLayer;
 use tower_sessions::{
@@ -26,7 +25,6 @@ mod serde_converters;
 
 pub struct AppState {
     db: SqlitePool,
-    jinja: Environment<'static>,
 }
 
 fn not_htmx_predicate(req: &Request<Body>) -> bool {
@@ -66,6 +64,7 @@ async fn main() {
     let mut jinja = Environment::new();
     jinja.set_loader(path_loader("templates"));
     jinja.add_filter("date_string", date_string);
+    let _ = SHARED_JINJA_ENV.set(jinja.clone());
 
     // Setup static file service
     let static_dir_dist = ServeDir::new("static/dist");
@@ -107,10 +106,7 @@ async fn main() {
         .layer(governor_layer)
         .layer(session_layer)
         .fallback(handle_page_404)
-        .with_state(Arc::new(AppState {
-            db: db_pool.clone(),
-            jinja,
-        }));
+        .with_state(Arc::new(AppState { db: db_pool.clone() }));
 
     if cfg!(debug_assertions) {
         app = app.layer(

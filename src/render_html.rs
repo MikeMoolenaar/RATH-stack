@@ -1,17 +1,11 @@
-use std::error::Error;
-
 use axum::response::Html;
 use minify_html::{minify, Cfg};
 use minijinja::{context, Environment};
 use serde::ser::Serialize;
+use std::{error::Error, sync::OnceLock};
 
-pub fn render_html<S: Serialize>(
-    template_name: &str,
-    context: S,
-    jinja_env: &Environment,
-    boosted: bool,
-) -> Option<Html<String>> {
-    match render(template_name, "body", context, jinja_env, boosted) {
+pub fn render_html<S: Serialize>(template_name: &str, context: S, boosted: bool) -> Option<Html<String>> {
+    match render(template_name, "body", context, boosted) {
         Ok(html) => Some(html),
         Err(err) => {
             println!("Error rendering html: {}", err);
@@ -20,13 +14,8 @@ pub fn render_html<S: Serialize>(
     }
 }
 
-pub fn render_block<S: Serialize>(
-    template_name: &str,
-    block_name: &str,
-    context: S,
-    jinja_env: &Environment,
-) -> Option<Html<String>> {
-    match render(template_name, block_name, context, jinja_env, true) {
+pub fn render_block<S: Serialize>(template_name: &str, block_name: &str, context: S) -> Option<Html<String>> {
+    match render(template_name, block_name, context, true) {
         Ok(html) => Some(html),
         Err(err) => {
             println!("Error rendering block: {}", err);
@@ -35,16 +24,18 @@ pub fn render_block<S: Serialize>(
     }
 }
 
+pub static SHARED_JINJA_ENV: OnceLock<Environment> = OnceLock::new();
+
 fn render<S: Serialize>(
     template_name: &str,
     block_name: &str,
     context: S,
-    jinja_env: &Environment,
     boosted: bool,
 ) -> Result<Html<String>, Box<dyn Error>> {
-    // TODO Use global jinja_env so we don't have to always pass it
-    //   https://github.com/photino/zino/blob/main/zino-core/src/view/minijinja.rs
-    let tpl = jinja_env.get_template(template_name)?;
+    let tpl = SHARED_JINJA_ENV
+        .get()
+        .expect("Jinja environment not initialized!")
+        .get_template(template_name)?;
 
     if boosted {
         let title = tpl.eval_to_state(context!())?.render_block("title")?;

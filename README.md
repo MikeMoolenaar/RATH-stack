@@ -62,3 +62,12 @@ run formatter
 ```sh
 cargo +nightly fmt -- src/routes.rs
 ```
+
+Fly commands
+```sh
+fly machine start
+fly machine stop
+
+fly deploy # Deploy using remote runner
+sudo fly deploy --local-only # Deploy using local docker runner
+```
