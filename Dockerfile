@@ -13,18 +13,17 @@ RUN cargo chef cook --release --recipe-path recipe.json
 RUN cargo install sqlx-cli
 
 # Build application
+ENV SQLX_OFFLINE=true 
 COPY . .
-RUN cargo sqlx database setup
 RUN cargo build --release
 
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
-ENV DATABASE_URL="sqlite://sqlite.db"
 
 COPY --from=builder /app/target/release/rust-plus-htmx-playground /usr/local/bin
-COPY --from=builder /app/sqlite.db /app/sqlite.db
 COPY --from=builder /app/templates /app/templates
 COPY --from=builder /app/static /app/static
+COPY --from=builder /app/.env.prod /app/.env
 RUN chmod +x /usr/local/bin/rust-plus-htmx-playground
 
 EXPOSE 8080

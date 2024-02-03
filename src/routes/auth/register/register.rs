@@ -36,7 +36,7 @@ pub async fn register_post(
         errors.insert("password2", "Passwords do not match");
     }
 
-    let email_exists = sqlx::query!("SELECT email FROM users WHERE email = ?", form.email)
+    let email_exists = sqlx::query!("SELECT email FROM users WHERE email = $1", form.email)
         .fetch_optional(&state.db)
         .await
         .unwrap();
@@ -67,9 +67,10 @@ pub async fn register_post(
     };
 
     let query_result = sqlx::query!(
-        "INSERT INTO users (email,password) VALUES (?, ?)",
+        "INSERT INTO users (email,password,created_at) VALUES ($1,$2,$3)",
         user.email,
         user.password,
+        chrono::Utc::now().timestamp()
     )
     .execute(&state.db)
     .await

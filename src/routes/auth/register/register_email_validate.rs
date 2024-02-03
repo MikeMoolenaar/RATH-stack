@@ -15,7 +15,7 @@ pub async fn register_email_validate(
     State(state): State<Arc<AppState>>,
     query: Query<EmailForm>,
 ) -> (StatusCode, Html<String>) {
-    let email_exists = sqlx::query!("SELECT email FROM users WHERE email = ?", query.email)
+    let email_exists = sqlx::query!("SELECT email FROM users WHERE email = $1", query.email)
         .fetch_optional(&state.db)
         .await
         .unwrap();

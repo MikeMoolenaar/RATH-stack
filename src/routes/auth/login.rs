@@ -26,7 +26,7 @@ pub async fn login_post(
 
     let user = sqlx::query_as!(
         User,
-        "SELECT id, email, password, created_at FROM users WHERE email = ?",
+        "SELECT id, email, password, created_at FROM users WHERE email = $1",
         form.email
     )
     .fetch_optional(&state.db)
@@ -58,7 +58,7 @@ pub async fn login_post(
         );
     }
 
-    session.insert("user", user).unwrap();
+    session.insert("user", user).await.unwrap();
     return (
         StatusCode::OK,
         Some(HxLocation::from_str("/").unwrap()),

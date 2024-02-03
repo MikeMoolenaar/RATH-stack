@@ -12,10 +12,10 @@ pub async fn create_todo(
     Form(form): Form<TodoItem>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     let title_clone = form.title.clone();
-    let user = session.get::<User>("user").unwrap().unwrap();
+    let user = session.get::<User>("user").await.unwrap().unwrap();
 
     let query_result = sqlx::query!(
-        "INSERT INTO todos (title,date,user_id) VALUES (?, ?, ?)",
+        "INSERT INTO todos (title,date,user_id) VALUES ($1,$2,$3)",
         form.title,
         form.date,
         user.id

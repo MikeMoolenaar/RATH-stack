@@ -4,3 +4,5 @@ sqlite.db*
 /static/output.css
 /static/dist
 .idea
+.env.prod
+.sqlx

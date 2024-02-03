@@ -21,6 +21,7 @@ minijinja = { version = "1.0.10", features = ["loader", "v_htmlescape", "multi_t
 axum-htmx = "0.5.0"
 tower-livereload = "0.9.1"
 argon2 = "0.5.2"
-tower-sessions = { version = "0.7.0", features = ["sqlite-store", "deletion-task"] }
+tower-sessions = { version = "0.10.1" }
+tower-sessions-sqlx-store = { version = "0.10.0", features = ["postgres"] }
 time = "0.3.30"
 minify-html = "0.15.0"

@@ -1,21 +1,18 @@
 use crate::{filters::*, render_html::SHARED_JINJA_ENV, routes::error_404::*};
 use axum::{
     body::Body,
-    error_handling::HandleErrorLayer,
-    http::{header, HeaderValue, Request, StatusCode},
-    BoxError, Router,
+    http::{header, HeaderValue, Request}, Router,
 };
 use dotenv::dotenv;
 use minijinja::{path_loader, Environment};
-use sqlx::{migrate::MigrateDatabase, Sqlite};
+use sqlx::{migrate::MigrateDatabase, postgres::PgPoolOptions, Pool, Postgres};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use tower::ServiceBuilder;
 use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
 use tower_livereload::LiveReloadLayer;
-use tower_sessions::{
-    cookie::SameSite, session_store::ExpiredDeletion, sqlx::SqlitePool, Expiry, SessionManagerLayer, SqliteStore,
-};
+use tower_sessions::{cookie::SameSite, session_store::ExpiredDeletion, Expiry, SessionManagerLayer};
+use tower_sessions_sqlx_store::PostgresStore;
 
 mod filters;
 mod models;
@@ -24,7 +21,7 @@ mod routes;
 mod serde_converters;
 
 pub struct AppState {
-    db: SqlitePool,
+    db: Pool<Postgres>,
 }
 
 fn not_htmx_predicate(req: &Request<Body>) -> bool {
@@ -37,12 +34,16 @@ async fn main() {
 
     // Connect to DB
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    Sqlite::database_exists(&db_url)
+    Postgres::database_exists(&db_url)
         .await
         .expect("Database should exist, run `cargo sqlx database setup`");
-    let db_pool = SqlitePool::connect(&db_url).await.expect("Database should connect");
+    let db_pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&db_url)
+        .await
+        .expect("Could not connect to database");
 
-    let session_store = SqliteStore::new(db_pool.clone());
+    let session_store = PostgresStore::new(db_pool.clone());
     session_store.migrate().await.expect("Could not migrate session store");
     tokio::task::spawn(
         session_store
@@ -50,15 +51,13 @@ async fn main() {
             .continuously_delete_expired(Duration::from_secs(60)),
     );
 
-    let session_layer = ServiceBuilder::new()
-        .layer(HandleErrorLayer::new(|_: BoxError| async { StatusCode::BAD_REQUEST }))
-        .layer(
-            SessionManagerLayer::new(session_store)
-                .with_secure(false)
-                .with_http_only(true)
-                .with_same_site(SameSite::Strict)
-                .with_expiry(Expiry::OnInactivity(time::Duration::days(7))),
-        );
+    let session_layer = ServiceBuilder::new().layer(
+        SessionManagerLayer::new(session_store)
+            .with_secure(false)
+            .with_http_only(true)
+            .with_same_site(SameSite::Strict)
+            .with_expiry(Expiry::OnInactivity(time::Duration::days(7))),
+    );
 
     // Setup templating
     let mut jinja = Environment::new();

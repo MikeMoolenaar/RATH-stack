@@ -68,6 +68,8 @@ Fly commands
 fly machine start
 fly machine stop
 
+cargo sqlx prepare # must be run before deployment, because SQLX_OFFLINE is true
+
 fly deploy # Deploy using remote runner
 sudo fly deploy --local-only # Deploy using local docker runner
 ```
