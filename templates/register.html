@@ -8,7 +8,7 @@
 
 {% block body %}
   <h1 class="text-5xl font-bold mb-8">Register</h1>
-  <form id="result" hx-post="/register" hx-target-400="this" hx-target-500="this" hx-disabled-elt="find button" hx-select="#result" hx-swap="morph" class="mb-8">
+  <form id="result" hx-post="/register" hx-target-400="this" hx-target-500="this" hx-indicator="button + .loading" hx-disabled-elt="find button" hx-select="#result" hx-swap="morph" class="mb-8">
     <div class="mb-4">
       <label target="email" class="label">
         Email
@@ -19,6 +19,7 @@
         hx-get="/register/check"
         hx-params="email"
         hx-trigger="keyup delay:500ms changed"
+        hx-target-400="next .text-error"
         hx-target="next .text-error"
         hx-indicator="next .loading"
         hx-disabled-elt="unset"

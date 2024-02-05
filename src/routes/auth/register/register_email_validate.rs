@@ -21,7 +21,7 @@ pub async fn register_email_validate(
         .unwrap();
     if email_exists.is_some() {
         return (
-            StatusCode::OK,
+            StatusCode::BAD_REQUEST,
             Html(String::from("<p class=\"text-error\">Email already exists</p>")),
         );
     }
