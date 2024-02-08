@@ -5,4 +5,3 @@ sqlite.db*
 /static/dist
 .idea
 .env.prod
-.sqlx
