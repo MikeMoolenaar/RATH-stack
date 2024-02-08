@@ -26,7 +26,8 @@ WORKDIR /app
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/rust-plus-htmx-playground /usr/local/bin
 COPY --from=builder /app/templates /app/templates
 COPY --from=builder /app/static /app/static
-COPY --from=builder /app/.env.prod /app/.env
+# Optionally copy the .env file
+COPY --from=builder /app/.env.prod* /app/.env
 RUN chmod +x /usr/local/bin/rust-plus-htmx-playground
 
 EXPOSE 8080
