@@ -1,7 +1,8 @@
 use crate::{filters::*, render_html::SHARED_JINJA_ENV, routes::error_404::*};
 use axum::{
     body::Body,
-    http::{header, HeaderValue, Request}, Router,
+    http::{header, HeaderValue, Request},
+    Router,
 };
 use dotenv::dotenv;
 use minijinja::{path_loader, Environment};
@@ -42,6 +43,10 @@ async fn main() {
         .connect(&db_url)
         .await
         .expect("Could not connect to database");
+    sqlx::migrate!("./migrations")
+        .run(&db_pool.clone())
+        .await
+        .expect("Could not run migrations");
 
     let session_store = PostgresStore::new(db_pool.clone());
     session_store.migrate().await.expect("Could not migrate session store");

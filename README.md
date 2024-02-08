@@ -41,10 +41,9 @@ npm run tailwind
 - [x] Use the correct http status codes in login and register
 - [x] Add inline email validaton https://hypermedia.systems/hypermedia-systems/#_debouncing_our_validation_requests
 - [x] Refactor into separate files for each route
-- [ ] Improve code for render_html.rs
+- [x] Improve code for render_html.rs
 - [ ] Setup build via GH actions
 - [ ] Rename to RATH stack, Rust Actix Turso Hhtmx (SQLx doesn't support Turso yet.... such a shame)
-- [ ] use https://github.com/wilsonzlin/minify-html in a middleware: https://docs.rs/axum/latest/axum/middleware/fn.from_fn.html
 
 
 ## Handy commands

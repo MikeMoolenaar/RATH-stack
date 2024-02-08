@@ -12,7 +12,7 @@ COPY --from=planner /app/recipe.json recipe.json
 
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
-RUN cargo install sqlx-cli
+# RUN cargo install sqlx-cli
 
 
 # Build application
