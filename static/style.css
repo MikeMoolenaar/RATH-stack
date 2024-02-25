@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --rounded-btn: 1.9rem;
+  }
+
+  a.toggled, a.toggled:hover, a.toggled:focus { 
+    color: oklch(var(--p));
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  a.toggled, a.toggled:hover, a.toggled:focus { 
+    color: oklch(var(--pc));
+  }
+}
+
 /* Fix weird animation on load  */
 .btn {
   animation:unset;
@@ -11,19 +27,7 @@
   }
 }
 
-/* Add animation on content swap */
-#content {
-  opacity: 1;
-  transition: opacity 50ms ease-in-out;
-}
-#content.htmx-request,
-#content.htmx-swapping,
-#content.htmx-settling {
-  opacity: 0;
-}
-
 .input:focus {
   outline-color: hsl(var(--pf));
 }
 
-a.toggled, a.toggled:hover { color: red !important; }

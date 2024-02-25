@@ -42,7 +42,7 @@
       htmx.on('load', setLinks);
       htmx.on('htmx:pushedIntoHistory', setLinks);
     </script>
-    <nav class="navbar bg-neutral" id="mavbar" hx-boost="true" hx-target="#content" hx-swap="innerHTML swap:100ms settle:100ms">
+    <nav class="navbar bg-neutral text-neutral-content" id="mavbar" hx-boost="true" hx-target="#content" hx-swap="innerHTML">
       <div class="flex-1">
         <a class="btn btn-ghost normal-case text-xl {% if cur_page == 'home' %}toggled{% endif %}" href="/">Todo app</a>
       </div>
@@ -56,7 +56,7 @@
           <li>
             <details>
               <summary>{{ user.email }}</summary>
-              <ul class="p-2 bg-base-100">
+              <ul class="p-2 bg-neutral/60">
                 <li>
                   <a hx-post="/logout" >
                     logout
@@ -71,6 +71,7 @@
             </details>
           </li>
           {% endif %}
+          
         </ul>
       </div>
     </nav>

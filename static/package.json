@@ -4,7 +4,7 @@
     "idiomorph": "0.3.0"
   },
   "devDependencies": {
-    "daisyui": "^4.6.0",
+    "daisyui": "4.7.2",
     "prettier": "^2.0.0",
     "prettier-plugin-django": "latest",
     "tailwindcss": "^3.3.5",
