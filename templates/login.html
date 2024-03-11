@@ -11,7 +11,7 @@
   <form hx-post="/login" hx-disabled-elt="find button" hx-target="#content" hx-target-401="#errors" class="mb-8" hx-on:htmx-before-send="let x = document.querySelector('#errors .alert'); x && x.remove()">
     <div class="mb-4">
       <label target="email" class="label">Email</label>
-      <input id="email" type="email" class="input input-bordered w-full max-w-xs" name="email" value="{{ values.email if values }}" required />
+      <input id="email" type="email" class="input input-bordered w-full max-w-xs" name="email" value="{{ values.email if values }}" required autofocus />
     </div>
     <div class="mb-4">
       <label target="password" class="label">Password</label>

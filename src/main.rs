@@ -48,6 +48,7 @@ async fn main() {
         .await
         .expect("Could not run migrations");
 
+    // Setup session store
     let session_store = PostgresStore::new(db_pool.clone());
     session_store.migrate().await.expect("Could not migrate session store");
     tokio::task::spawn(
@@ -55,12 +56,11 @@ async fn main() {
             .clone()
             .continuously_delete_expired(Duration::from_secs(60)),
     );
-
     let session_layer = ServiceBuilder::new().layer(
         SessionManagerLayer::new(session_store)
             .with_secure(false)
             .with_http_only(true)
-            .with_same_site(SameSite::Strict)
+            .with_same_site(SameSite::Lax)
             .with_expiry(Expiry::OnInactivity(time::Duration::days(7))),
     );
 
