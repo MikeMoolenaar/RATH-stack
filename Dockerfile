@@ -12,8 +12,6 @@ COPY --from=planner /app/recipe.json recipe.json
 
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
-# RUN cargo install sqlx-cli
-
 
 # Build application
 ENV SQLX_OFFLINE=true 
@@ -28,6 +26,7 @@ COPY --from=builder /app/templates /app/templates
 COPY --from=builder /app/static /app/static
 # Optionally copy the .env file
 COPY --from=builder /app/.env.prod* /app/.env
+
 RUN chmod +x /usr/local/bin/rust-plus-htmx-playground
 
 EXPOSE 8080
