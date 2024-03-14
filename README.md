@@ -42,9 +42,9 @@ npm run tailwind
 - [x] Add inline email validaton https://hypermedia.systems/hypermedia-systems/#_debouncing_our_validation_requests
 - [x] Refactor into separate files for each route
 - [x] Improve code for render_html.rs
-- [ ] Setup build via GH actions
-- [ ] Rename to RATH stack, Rust Actix Turso Hhtmx (SQLx doesn't support Turso yet.... such a shame)
-
+- [x] Setup build via GH actions
+- [x] Migrate from SQLX/PostgreSQL to Libsql/Turso (sqlx doesn't support turso yet... such a shame)
+- [ ] Rename to RATH stack, Rust Axum Turso Hhtmx
 
 ## Handy commands
 You can execute `prepushsh` to fix lint and format.
