@@ -37,7 +37,7 @@ pub async fn register_post(
         errors.insert("password2", "Passwords do not match");
     }
 
-    // TODO fetch is a little overkill, just use a count or something
+    // TODO: fetch is a little overkill, just use a count or something
     let email_exists = fetch_optional::<User>(
         &state.db_conn,
         "SELECT email FROM users WHERE email = $1",
