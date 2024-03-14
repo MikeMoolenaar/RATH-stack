@@ -1,7 +1,8 @@
-use crate::{models::user::User, render_html::*, AppState};
+use crate::{models::user::User, render_html::*, turso_helper::fetch_optional, AppState};
 use argon2::{password_hash::PasswordHash, Argon2, PasswordVerifier};
 use axum::{extract::State, http::StatusCode, response::Html, Form};
 use axum_htmx::{HxBoosted, HxLocation};
+use libsql::params;
 use minijinja::context;
 use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
@@ -24,12 +25,11 @@ pub async fn login_post(
 ) -> (StatusCode, Option<HxLocation>, Html<String>) {
     let mut errors = HashMap::new();
 
-    let user = sqlx::query_as!(
-        User,
-        "SELECT id, email, password, created_at FROM users WHERE email = $1",
-        form.email
+    let user = fetch_optional::<User>(
+        &state.db_conn,
+        "SELECT id, email, password, created_at FROM users WHERE email = ?",
+        params![form.email.clone()],
     )
-    .fetch_optional(&state.db)
     .await
     .unwrap();
 

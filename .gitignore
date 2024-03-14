@@ -1,7 +1,8 @@
 /target
-sqlite.db*
+local.db*
 **/node_modules
 /static/output.css
 /static/dist
 .idea
+.env
 .env.prod

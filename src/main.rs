@@ -5,24 +5,25 @@ use axum::{
     Router,
 };
 use dotenv::dotenv;
+use libsql::{Builder, Connection};
 use minijinja::{path_loader, Environment};
-use sqlx::{migrate::MigrateDatabase, postgres::PgPoolOptions, Pool, Postgres};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use tower::ServiceBuilder;
 use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::{services::ServeDir, set_header::SetResponseHeaderLayer};
 use tower_livereload::LiveReloadLayer;
 use tower_sessions::{cookie::SameSite, session_store::ExpiredDeletion, Expiry, SessionManagerLayer};
-use tower_sessions_sqlx_store::PostgresStore;
+use tower_sessions_libsql_store::LibsqlStore;
 
 mod filters;
 mod models;
 mod render_html;
 mod routes;
 mod serde_converters;
+mod turso_helper;
 
 pub struct AppState {
-    db: Pool<Postgres>,
+    db_conn: Connection,
 }
 
 fn not_htmx_predicate(req: &Request<Body>) -> bool {
@@ -35,23 +36,32 @@ async fn main() {
 
     // Connect to DB
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    Postgres::database_exists(&db_url)
-        .await
-        .expect("Database should exist, run `cargo sqlx database setup`");
-    let db_pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&db_url)
+    let db_token = env::var("LIBSQL_AUTH_TOKEN").expect("TOKEN must be set");
+
+    // Setup database
+    let db = Builder::new_remote_replica("local.db", db_url, db_token)
+        .sync_interval(Duration::from_secs(60))
+        .build()
         .await
         .expect("Could not connect to database");
-    sqlx::migrate!("./migrations")
-        .run(&db_pool.clone())
-        .await
-        .expect("Could not run migrations");
+    let conn = db.connect().unwrap();
+    db.sync().await.unwrap();
+
+    // Loop over all files in dir migrations and run them
+    let migrations = std::fs::read_dir("migrations").unwrap();
+    for migration in migrations {
+        let path = migration.unwrap().path();
+        if path.is_file() {
+            let content = std::fs::read_to_string(path.clone()).unwrap();
+            conn.execute(&content, ()).await.unwrap();
+            println!("Ran migration: {}", path.display());
+        }
+    }
 
     // Setup session store
-    let session_store = PostgresStore::new(db_pool.clone());
+    let session_store = LibsqlStore::new(conn.clone());
     session_store.migrate().await.expect("Could not migrate session store");
-    tokio::task::spawn(
+    let _deletion_task = tokio::task::spawn(
         session_store
             .clone()
             .continuously_delete_expired(Duration::from_secs(60)),
@@ -110,13 +120,14 @@ async fn main() {
         .layer(governor_layer)
         .layer(session_layer)
         .fallback(handle_page_404)
-        .with_state(Arc::new(AppState { db: db_pool.clone() }));
+        .with_state(Arc::new(AppState { db_conn: conn.clone() }));
 
+    // Add live reload in debug mode
     if cfg!(debug_assertions) {
         app = app.layer(
             LiveReloadLayer::new()
                 .request_predicate(not_htmx_predicate)
-                .reload_interval(Duration::from_millis(100)),
+                .reload_interval(Duration::from_millis(300)),
         )
     }
 
@@ -126,4 +137,5 @@ async fn main() {
     axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .unwrap();
+    // TODO add graeful shutdown for deletion_task
 }

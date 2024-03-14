@@ -1,10 +1,11 @@
-use crate::{models::user::User, render_html::*, AppState};
+use crate::{models::user::User, render_html::*, turso_helper::*, AppState};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
     Argon2,
 };
 use axum::{extract::State, http::StatusCode, response::Html, Form};
 use axum_htmx::HxBoosted;
+use libsql::params;
 use minijinja::context;
 use serde::Deserialize;
 use std::{collections::HashMap, sync::Arc};
@@ -36,10 +37,14 @@ pub async fn register_post(
         errors.insert("password2", "Passwords do not match");
     }
 
-    let email_exists = sqlx::query!("SELECT email FROM users WHERE email = $1", form.email)
-        .fetch_optional(&state.db)
-        .await
-        .unwrap();
+    // TODO fetch is a little overkill, just use a count or something
+    let email_exists = fetch_optional::<User>(
+        &state.db_conn,
+        "SELECT email FROM users WHERE email = $1",
+        params![form.email.clone()],
+    )
+    .await
+    .unwrap();
 
     if email_exists.is_some() {
         errors.insert("email", "Email already exists");
@@ -66,15 +71,13 @@ pub async fn register_post(
         created_at: 0,
     };
 
-    let query_result = sqlx::query!(
-        "INSERT INTO users (email,password,created_at) VALUES ($1,$2,$3)",
-        user.email,
-        user.password,
-        chrono::Utc::now().timestamp()
-    )
-    .execute(&state.db)
-    .await
-    .map_err(|err: sqlx::Error| err.to_string());
+    let query_result = state
+        .db_conn
+        .execute(
+            "INSERT INTO users (email,password,created_at) VALUES (?, ?, ?)",
+            params![user.email, user.password, chrono::Utc::now().timestamp()],
+        )
+        .await;
 
     if let Err(err) = query_result {
         println!("Could not execute insert due to error: {}", err);
