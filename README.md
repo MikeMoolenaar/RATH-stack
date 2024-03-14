@@ -1,10 +1,11 @@
 # Rust + HTMX playground
+Demo application for the RATH stack (Rust, Axum, Turso Htmx).
 
 ## Getting started
 Setup:
 ```sh
-cargo install sqlx-cli
-cargo sqlx database setup
+mv .env.example .env
+# Edit .env file
 
 npm install --prefix src/static
 npm install -g tailwindcss # Or install tailwind via your package manager
@@ -47,7 +48,7 @@ npm run tailwind
 - [ ] Rename to RATH stack, Rust Axum Turso Hhtmx
 
 ## Handy commands
-You can execute `prepushsh` to fix lint and format.
+You can execute `prepush.sh` to fix lint and format.
 
 run lint
 ```sh
@@ -66,8 +67,6 @@ Fly commands
 ```sh
 fly machine start
 fly machine stop
-
-cargo sqlx prepare # must be run before deployment, because SQLX_OFFLINE is true
 
 fly deploy # Deploy using remote runner
 sudo fly deploy --local-only # Deploy using local docker runner
