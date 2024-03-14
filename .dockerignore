@@ -1,4 +1,4 @@
 target
-**/sqlite.db*
+**/local.db*
 static/node_modules
 fly.toml

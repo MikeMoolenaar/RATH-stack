@@ -4,6 +4,8 @@ use minijinja::{context, Environment};
 use serde::ser::Serialize;
 use std::{error::Error, sync::OnceLock};
 
+pub static SHARED_JINJA_ENV: OnceLock<Environment> = OnceLock::new();
+
 pub fn render_html<S: Serialize>(template_name: &str, context: S, boosted: bool) -> Option<Html<String>> {
     match render(template_name, "body", context, boosted) {
         Ok(html) => Some(html),
@@ -23,8 +25,6 @@ pub fn render_block<S: Serialize>(template_name: &str, block_name: &str, context
         }
     }
 }
-
-pub static SHARED_JINJA_ENV: OnceLock<Environment> = OnceLock::new();
 
 fn render<S: Serialize>(
     template_name: &str,
