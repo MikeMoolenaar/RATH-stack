@@ -7,21 +7,21 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.7.4", features = ["form", "macros"] }
-tokio = { version = "1.36.0", features = ["full"] }
+tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
 tower-http = { version = "0.5", features = ["fs","set-header"] }
-serde = { version = "1.0.196", features = ["derive"] }
+serde = { version = "1.0.197", features = ["derive"] }
 rand = "0.8"
-chrono = "0.4.33"
-html-escape = "0.2.13"
+chrono = "0.4.35"
 dotenv = "0.15.0"
-tower = { version = "0.4.13" }
-tower_governor = { version = "0.3.1" }
-minijinja = { version = "1.0.12", features = ["loader", "v_htmlescape", "multi_template"] }
-axum-htmx = "0.5.0"
-tower-livereload = "0.9.1"
-argon2 = "0.5.3"
-tower-sessions = "0.10.1"
+tower = "0.4.13"
+tower_governor = "0.3.2"
+tower-sessions = "0.10.2"
 tower-sessions-libsql-store = "0.1.0"
-time = "0.3.33"
+tower-livereload = "0.9.2"
+minijinja = { version = "1.0.14", features = ["loader", "v_htmlescape", "multi_template"] }
+axum-htmx = "0.5.0"
+argon2 = "0.5.3"
+time = "0.3.34"
 minify-html = "0.15.0"
 libsql = "0.3.1"
+v_htmlescape = "0.15.8"

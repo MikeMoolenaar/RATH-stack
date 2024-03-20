@@ -26,6 +26,17 @@ pub fn render_block<S: Serialize>(template_name: &str, block_name: &str, context
     }
 }
 
+// TODO: Improve error handling
+pub fn render_html_str<S: Serialize>(template_raw: &str, context: S) -> Result<Html<String>, Box<dyn Error>> {
+    let template = SHARED_JINJA_ENV
+        .get()
+        .expect("Jinja environment not initialized!")
+        .render_str(template_raw, context)?;
+    // Minijiinja does not escape html when using render()
+    let str = v_htmlescape::escape(template.as_str());
+    return Ok(Html(str.to_string()));
+}
+
 fn render<S: Serialize>(
     template_name: &str,
     block_name: &str,

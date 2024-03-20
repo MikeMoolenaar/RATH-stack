@@ -1,9 +1,11 @@
 use crate::{
     models::{todo_item::TodoItemRequest, user::User},
+    render_html::render_html_str,
     AppState,
 };
-use axum::{extract::State, http::StatusCode, response::IntoResponse, Form};
+use axum::{extract::State, http::StatusCode, response::Html, Form};
 use libsql::params;
+use minijinja::context;
 use std::sync::Arc;
 use tower_sessions::Session;
 
@@ -11,7 +13,7 @@ pub async fn create_todo(
     session: Session,
     State(state): State<Arc<AppState>>,
     Form(form): Form<TodoItemRequest>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<Html<String>, (StatusCode, String)> {
     let title_clone = form.title.clone();
     let user = session.get::<User>("user").await.unwrap().unwrap();
 
@@ -28,5 +30,11 @@ pub async fn create_todo(
         return Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("Unknown error")));
     }
 
-    return Ok(format!("Todo item '{}' succesfuly added", title_clone));
+    return Ok(render_html_str(
+        "Todo item '{{ title_clone }}' succesfuly added!",
+        context! {
+            title_clone
+        },
+    )
+    .unwrap());
 }
