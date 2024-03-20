@@ -6,7 +6,7 @@ use axum::{
 };
 use dotenv::dotenv;
 use libsql::{Builder, Connection};
-use minijinja::{path_loader, Environment};
+use minijinja::{path_loader, AutoEscape, Environment};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use tower::ServiceBuilder;
 use tower_governor::{governor::GovernorConfigBuilder, GovernorLayer};
@@ -78,6 +78,7 @@ async fn main() {
     let mut jinja = Environment::new();
     jinja.set_loader(path_loader("templates"));
     jinja.add_filter("date_string", date_string);
+    jinja.set_auto_escape_callback(|_| AutoEscape::Html);
     let _ = SHARED_JINJA_ENV.set(jinja.clone());
 
     // Setup static file service

@@ -1,6 +1,6 @@
 use crate::{
     models::{todo_item::TodoItemRequest, user::User},
-    render_html::render_html_str,
+    render_html::render_str,
     AppState,
 };
 use axum::{extract::State, http::StatusCode, response::Html, Form};
@@ -30,7 +30,7 @@ pub async fn create_todo(
         return Err((StatusCode::INTERNAL_SERVER_ERROR, String::from("Unknown error")));
     }
 
-    return Ok(render_html_str(
+    return Ok(render_str(
         "Todo item '{{ title_clone }}' succesfuly added!",
         context! {
             title_clone
