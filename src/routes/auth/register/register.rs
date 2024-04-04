@@ -37,16 +37,15 @@ pub async fn register_post(
         errors.insert("password2", "Passwords do not match");
     }
 
-    // TODO: fetch is a little overkill, just use a count or something
-    let email_exists = fetch_optional::<User>(
+    let count = count(
         &state.db_conn,
-        "SELECT email FROM users WHERE email = $1",
+        "SELECT count(*) FROM users WHERE email = $1",
         params![form.email.clone()],
     )
     .await
     .unwrap();
 
-    if email_exists.is_some() {
+    if count > 0 {
         errors.insert("email", "Email already exists");
     }
 

@@ -138,5 +138,5 @@ async fn main() {
     axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .unwrap();
-    // TODO: add graeful shutdown for deletion_task
+    // TODO: add graceful shutdown for deletion_task
 }

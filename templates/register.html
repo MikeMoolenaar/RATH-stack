@@ -15,6 +15,7 @@
       </label>
       <input id="email" type="email" class="input input-bordered w-full max-w-xs" name="email" value="{{ values.email if values }}"
         minlength="4"
+        autofocus
         hx-validate="true"
         hx-get="/register/check"
         hx-params="email"

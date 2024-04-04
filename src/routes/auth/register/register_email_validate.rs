@@ -1,4 +1,4 @@
-use crate::{models::user::User, turso_helper::fetch_optional, AppState};
+use crate::{turso_helper::count, AppState};
 use axum::{
     extract::{Query, State},
     http::StatusCode,
@@ -16,16 +16,15 @@ pub async fn register_email_validate(
     State(state): State<Arc<AppState>>,
     query: Query<EmailForm>,
 ) -> (StatusCode, Html<String>) {
-    // TODO: fetch is a little overkill, just use a count or something
-    let email_exists = fetch_optional::<User>(
+    let count = count(
         &state.db_conn,
-        "SELECT email FROM users WHERE email = $1",
+        "SELECT count(*) FROM users WHERE email = $1",
         params![query.email.clone()],
     )
     .await
     .unwrap();
 
-    if email_exists.is_some() {
+    if count > 0 {
         return (
             StatusCode::BAD_REQUEST,
             Html(String::from("<p class=\"text-error\">Email already exists</p>")),
