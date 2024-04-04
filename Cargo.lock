@@ -2205,7 +2205,6 @@ dependencies = [
  "tower-sessions",
  "tower-sessions-libsql-store",
  "tower_governor",
- "v_htmlescape",
 ]
 
 [[package]]
