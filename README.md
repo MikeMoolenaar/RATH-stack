@@ -45,7 +45,6 @@ npm run tailwind
 - [x] Improve code for render_html.rs
 - [x] Setup build via GH actions
 - [x] Migrate from SQLX/PostgreSQL to Libsql/Turso (sqlx doesn't support turso yet... such a shame)
-- [ ] Use minijinja autoreload https://docs.rs/minijinja-autoreload/latest/minijinja_autoreload/
 - [ ] Rename to RATH stack, Rust Axum Turso Hhtmx
 
 ## Handy commands

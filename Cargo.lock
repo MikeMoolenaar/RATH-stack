@@ -2195,7 +2195,6 @@ dependencies = [
  "libsql",
  "minify-html",
  "minijinja",
- "rand",
  "serde",
  "time",
  "tokio",

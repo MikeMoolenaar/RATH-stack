@@ -37,6 +37,7 @@ async fn main() {
     // Connect to DB
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let db_token = env::var("LIBSQL_AUTH_TOKEN").expect("TOKEN must be set");
+    let db_run_migrations = env::var("RUN_MIGRATIONS").unwrap_or("true".to_string());
 
     // Setup database
     let db = Builder::new_remote_replica("local.db", db_url, db_token)
@@ -45,22 +46,26 @@ async fn main() {
         .await
         .expect("Could not connect to database");
     let conn = db.connect().unwrap();
-    db.sync().await.unwrap();
+    // db.sync().await.unwrap();
 
     // Loop over all files in dir migrations and run them
-    let migrations = std::fs::read_dir("migrations").unwrap();
-    for migration in migrations {
-        let path = migration.unwrap().path();
-        if path.is_file() {
-            let content = std::fs::read_to_string(path.clone()).unwrap();
-            conn.execute(&content, ()).await.unwrap();
-            println!("Ran migration: {}", path.display());
+    if db_run_migrations == "true" {
+        let migrations = std::fs::read_dir("migrations").unwrap();
+        for migration in migrations {
+            let path = migration.unwrap().path();
+            if path.is_file() {
+                let content = std::fs::read_to_string(path.clone()).unwrap();
+                conn.execute(&content, ()).await.unwrap();
+                println!("Ran migration: {}", path.display());
+            }
         }
     }
 
     // Setup session store
     let session_store = LibsqlStore::new(conn.clone());
-    session_store.migrate().await.expect("Could not migrate session store");
+    if db_run_migrations == "true" {
+        session_store.migrate().await.expect("Could not migrate session store");
+    }
     let _deletion_task = tokio::task::spawn(
         session_store
             .clone()
