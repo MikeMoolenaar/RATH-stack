@@ -19,5 +19,5 @@ minijinja = { version = "1.0.14", features = ["loader", "v_htmlescape", "multi_t
 axum-htmx = "0.5.0"
 argon2 = "0.5.3"
 time = "0.3.34"
-minify-html = "0.15.0"
 libsql = "0.3.1"
+html-minifier = "5.0.0"

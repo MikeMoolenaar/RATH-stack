@@ -1,5 +1,5 @@
 use axum::response::Html;
-use minify_html::{minify, Cfg};
+use html_minifier::HTMLMinifierError;
 use minijinja::{context, Environment};
 use serde::ser::Serialize;
 use std::{error::Error, sync::OnceLock};
@@ -62,9 +62,7 @@ fn render<S: Serialize>(
     }
 }
 
-fn minify_html(html: &str) -> Result<Html<String>, std::string::FromUtf8Error> {
-    let bytes = html.as_bytes();
-    let cfg = Cfg::spec_compliant();
-    let minified = minify(bytes, &cfg);
-    return Ok(Html(String::from_utf8(minified)?));
+fn minify_html(html: &str) -> Result<Html<String>, HTMLMinifierError> {
+    let html = html_minifier::minify(html)?;
+    return Ok(Html(html));
 }

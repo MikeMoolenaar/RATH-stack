@@ -46,7 +46,7 @@ async fn main() {
         .await
         .expect("Could not connect to database");
     let conn = db.connect().unwrap();
-    // db.sync().await.unwrap();
+    db.sync().await.unwrap();
 
     // Loop over all files in dir migrations and run them
     if db_run_migrations == "true" {
