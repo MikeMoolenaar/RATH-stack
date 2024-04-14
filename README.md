@@ -1,5 +1,7 @@
-# Rust + HTMX playground
-Demo application for the RATH stack (Rust, Axum, Turso Htmx).
+# RATH Stack playground
+Demo application for the RATH stack (Rust, Axum, Turso Htmx).  
+
+The app runs at https://rust-api-plus-htmx.fly.dev/. It can take up to 20 seconds to respond for the first request, because the Turso db and Fly.io app automaticly scale down to 0.
 
 ## Getting started
 Setup:
