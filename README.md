@@ -5,7 +5,9 @@ Also includes [Tailwind CSS](https://tailwindcss.com/) and [Minijinja](https://d
 App runs at https://rust-api-plus-htmx.fly.dev. It can take up to 20 seconds to respond for the first request, because the Turso db and Fly.io app automaticly scale down to 0.
 
 ## Getting started
-Setup:
+First, create a [Turso](https://turso.tech/) account and get the DB url + Auth token.  
+
+Setting up:
 ```sh
 mv .env.example .env
 # Edit .env file and set the correct values
@@ -14,7 +16,7 @@ npm install --prefix src/static
 npm install -g tailwindcss # Or install tailwind via your package manager
 ```
 
-Run:
+Running the app:
 ```sh
 cargo run
 # Or run when any non-static file (-i) changes and clear console (-c)
