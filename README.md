@@ -1,6 +1,6 @@
 # RATH stack demo
 Demo application for the RATH stack ([Rust](https://www.rust-lang.org/), [Axum](https://docs.rs/axum/latest/axum/), [Turso](https://turso.tech/) and [HTMX](https://htmx.org/)).  
-Also includes [Tailwind CSS](https://tailwindcss.com/) and [Minijinja](https://docs.rs/minijinja/latest/minijinja/) (Template engine for Rust), hosted on [Fly.io](https://fly.io/).
+Also includes [Tailwind CSS](https://tailwindcss.com/) and [Minijinja](https://docs.rs/minijinja/latest/minijinja/) (templating engine for Rust), hosted on [Fly.io](https://fly.io/).
 
 App runs at https://rust-api-plus-htmx.fly.dev. It can take up to 20 seconds to respond for the first request, because the Turso db and Fly.io app automaticly scale down to 0.
 
