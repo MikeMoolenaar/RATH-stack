@@ -1,7 +1,8 @@
 # RATH stack demo
-Demo application for the RATH stack (Rust, Axum, Turso and Htmx).  
+Demo application for the RATH stack ([Rust](https://www.rust-lang.org/), [Axum](https://docs.rs/axum/latest/axum/), [Turso](https://turso.tech/) and [HTMX](https://htmx.org/)).  
+Also includes [Tailwind CSS](https://tailwindcss.com/) and [Minijinja](https://docs.rs/minijinja/latest/minijinja/) (Template engine for Rust).
 
-The app runs at https://rust-api-plus-htmx.fly.dev. It can take up to 20 seconds to respond for the first request, because the Turso db and Fly.io app automaticly scale down to 0.
+App runs at https://rust-api-plus-htmx.fly.dev. It can take up to 20 seconds to respond for the first request, because the Turso db and Fly.io app automaticly scale down to 0.
 
 ## Getting started
 Setup:
@@ -14,7 +15,8 @@ npm install -g tailwindcss # Or install tailwind via your package manager
 ```
 
 Run:
-```sh cargo run
+```sh
+cargo run
 # Or run when any non-static file (-i) changes and clear console (-c)
 cargo watch -c -x run -i /static
 
