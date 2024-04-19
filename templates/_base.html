@@ -5,15 +5,15 @@
 
     <title>
       {% block title %}
-
       {% endblock %}
     </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Unminified htmx.js, handy for debugging errors -->
     <!-- <script src="https://unpkg.com/htmx.org@1.9.10/dist/htmx.js"></script> -->
 
-    <script src="static/dist/htmx-1.9.10.min.js"></script>
-    <script src="static/dist/htmx-response-targets-1.9.10.min.js"></script>
+    <script src="static/dist/htmx-1.9.12.min.js"></script>
+    <script src="static/dist/htmx-response-targets-1.9.12.min.js"></script>
     <script src="static/dist/idiomorph-0.3.0.min.js"></script>
 
     <meta name="htmx-config" content='{
@@ -22,14 +22,13 @@
       }'>
 
     {% block head %}
-
     {% endblock %}
   </head>
 
 
   <body hx-ext="response-targets,morph">
     <script>
-      let setLinks = function() {
+      let toggleLinks = function() {
         let links = document.querySelectorAll('nav a');
         for (let link of links) {
           if (link.getAttribute('href') === document.location.pathname) {
@@ -38,9 +37,9 @@
             link.classList.remove('toggled');
           }
         }
-      }
-      htmx.on('load', setLinks);
-      htmx.on('htmx:pushedIntoHistory', setLinks);
+      };
+      htmx.on('load', toggleLinks);
+      htmx.on('htmx:pushedIntoHistory', toggleLinks);
     </script>
     <nav class="navbar bg-neutral text-neutral-content" id="mavbar" hx-boost="true" hx-target="#content" hx-swap="innerHTML">
       <div class="flex-1">
