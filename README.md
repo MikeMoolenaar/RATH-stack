@@ -3,7 +3,7 @@ Demo application for the RATH stack (Rust + Axum + Turso + HTMX).
 
 App runs at https://rust-api-plus-htmx.fly.dev. It can take up to 20 seconds to respond for the first request, because the Turso db and Fly.io app automaticly scale down to 0.
 
-## Technoligies
+## Technologies
 - [Axum](https://docs.rs/axum/latest/axum/) - web API framework for Rust
 - [Turso](https://turso.tech) - Sqlite based database
 - [HTMX](https://htmx.org) - HTML-first web library
