@@ -19,8 +19,12 @@ Setting up:
 mv .env.example .env
 # Edit .env file and set the correct values
 
-npm install --prefix src/static
-npm install -g tailwindcss # Or install tailwind via your package manager
+cd static
+npm install
+npm install -g tailwindcss
+
+# Copies js files from node_modules into the /static/dist folder
+bash init.sh 
 ```
 
 Running the app:
