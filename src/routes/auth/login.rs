@@ -34,6 +34,11 @@ pub async fn login_post(
     .unwrap();
 
     if user.is_none() {
+        // Prevent unknown email from returning faster than providing a known email.
+        // This way, it cannot be known if the email exists.
+        let password_hash = PasswordHash::new("something").unwrap();
+        let _ = Argon2::default().verify_password(b"anything", &password_hash).is_ok();
+
         errors.insert("general", "Invalid email or password");
         return (
             StatusCode::UNAUTHORIZED,
