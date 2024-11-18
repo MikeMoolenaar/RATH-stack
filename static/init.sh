@@ -12,10 +12,19 @@ fi
 
 # Clear folder if dist folder exists
 if [ -d "dist" ]; then
-  rm -rf dist
+  read -p "Removing static/dist folder, are you sure? (y/n): " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    rm -rf dist
+  else
+    echo "Alrighty then, exiting."
+    exit 1
+  fi
 fi
 mkdir dist
 
-cp -r ./node_modules/htmx.org/dist/htmx.min.js "./dist/htmx-$HTMX_VERSION.min.js"
+cp -r ./node_modules/htmx.org/dist/htmx.js "./dist/htmx-$HTMX_VERSION.js"
 cp -r ./node_modules/htmx.org/dist/ext/response-targets.js "./dist/htmx-response-targets-$HTMX_VERSION.min.js"
 cp -r ./node_modules/idiomorph/dist/idiomorph-ext.min.js "./dist/idiomorph-$IDIOMORPH_VERSION.min.js"
+
+echo "Done, static files copied to dist folder."

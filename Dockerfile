@@ -1,4 +1,4 @@
-FROM clux/muslrust:1.76.0-stable-2024-02-28 AS chef
+FROM clux/muslrust:1.82.0-stable AS chef
 USER root
 RUN cargo install cargo-chef
 WORKDIR /app

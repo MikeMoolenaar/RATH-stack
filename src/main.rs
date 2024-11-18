@@ -114,7 +114,7 @@ async fn main() {
         governor_limiter.retain_recent();
     });
     let governor_layer = ServiceBuilder::new().layer(GovernorLayer {
-        config: Box::leak(governor_conf),
+        config: governor_conf.into(),
     });
 
     // Setup router

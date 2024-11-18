@@ -59,6 +59,8 @@ Fly commands
 fly machine start
 fly machine stop
 
+# make sure you have a .env.prod file before deploying!
+
 fly deploy # Deploy using remote runner
 sudo fly deploy --local-only # Deploy using local docker runner
 ```
