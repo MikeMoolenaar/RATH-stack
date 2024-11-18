@@ -5,7 +5,7 @@ use axum::{
     Router,
 };
 use dotenv::dotenv;
-use libsql::{Builder, Connection};
+use libsql::{Builder as LibsqlBuilder, Connection};
 use minijinja::{path_loader, AutoEscape, Environment};
 use std::{env, net::SocketAddr, sync::Arc, time::Duration};
 use tower::ServiceBuilder;
@@ -38,15 +38,26 @@ async fn main() {
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let db_token = env::var("LIBSQL_AUTH_TOKEN").expect("TOKEN must be set");
     let db_run_migrations = env::var("RUN_MIGRATIONS").unwrap_or("true".to_string());
+    let db_enable_embedded_replicas = env::var("EMBEDDED_REPLICAS").unwrap_or("false".to_string());
 
-    // Setup database
-    let db = Builder::new_remote_replica("local.db", db_url, db_token)
-        .sync_interval(Duration::from_secs(60))
-        .build()
-        .await
-        .expect("Could not connect to database");
-    let conn = db.connect().unwrap();
-    db.sync().await.unwrap();
+    let conn;
+    if db_enable_embedded_replicas == "true" {
+        let db = LibsqlBuilder::new_remote_replica("local.db", db_url, db_token)
+            .sync_interval(Duration::from_secs(60))
+            .build()
+            .await
+            .expect("Database must connect");
+        conn = db.connect().unwrap();
+        db.sync().await.unwrap();
+        println!("Using Libsql with embedded replicas");
+    } else {
+        let db = LibsqlBuilder::new_remote(db_url, db_token)
+            .build()
+            .await
+            .expect("Database must connect");
+        conn = db.connect().unwrap();
+        println!("Using Libsql with one remote replica");
+    }
 
     // Loop over all files in dir migrations and run them
     if db_run_migrations == "true" {
