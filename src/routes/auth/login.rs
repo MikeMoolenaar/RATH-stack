@@ -66,7 +66,7 @@ pub async fn login_post(
     session.insert("user", user).await.unwrap();
     return (
         StatusCode::OK,
-        Some(HxLocation::from_str("/").unwrap()),
+        Some(HxLocation::from_str("/")),
         Html(String::from("")),
     );
 }

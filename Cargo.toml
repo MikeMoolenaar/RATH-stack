@@ -6,22 +6,20 @@ authors = ["Mike Moolenaar <mmoolenaar9@gmail.com>"]
 repository = "https://github.com/MikeMoolenaar/RATH-stack"
 
 [dependencies]
-axum = { version = "0.8.1", features = ["form", "macros"] }
-tokio = { version = "1.43.0", features = ["macros", "rt-multi-thread"] }
+axum = { version = "0.8.7", features = ["form", "macros"] }
+tokio = { version = "1.48.0", features = ["macros", "rt-multi-thread"] }
 tower-http = { version = "0.6", features = ["fs","set-header"] }
-serde = { version = "1.0.217", features = ["derive"] }
-chrono = "0.4.39"
+serde = { version = "1.0.228", features = ["derive"] }
+chrono = "0.4.42"
 dotenv = "0.15.0"
 tower = "0.5.2"
-tower_governor = "0.6.0"
+tower_governor = "0.8.0"
 tower-sessions = "0.14.0"
-tower-sessions-libsql-store = "0.4.0"
-tower-livereload = "0.9.5"
-minijinja = { version = "2.6.0", features = ["loader", "v_htmlescape", "multi_template"] }
-# axum-htmx = "0.6.0"
-# Can be removed once https://github.com/robertwayne/axum-htmx/pull/25 is merged
-axum-htmx = { git = "https://github.com/kakalos12/axum-htmx.git" }
+tower-sessions-libsql-store = { git = "https://github.com/MikeMoolenaar/tower-sessions-libsql-store.git" }
+tower-livereload = "0.10.1"
+minijinja = { version = "2.12.0", features = ["loader", "v_htmlescape", "multi_template"] }
+axum-htmx = "0.8.1"
 argon2 = "0.5.3"
-time = "0.3.37"
-libsql = "0.6.0"
+time = "0.3.44"
+libsql = "0.9.29"
 html-minifier = "5.0.0"

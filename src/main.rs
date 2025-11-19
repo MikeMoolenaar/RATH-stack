@@ -124,9 +124,6 @@ async fn main() {
         std::thread::sleep(interval);
         governor_limiter.retain_recent();
     });
-    let governor_layer = ServiceBuilder::new().layer(GovernorLayer {
-        config: governor_conf.into(),
-    });
 
     // Setup router
     let mut app = Router::new()
@@ -134,7 +131,7 @@ async fn main() {
         .nest_service("/static", static_dir)
         .fallback(handle_static_404)
         .merge(routes::router())
-        .layer(governor_layer)
+        .layer(ServiceBuilder::new().layer(GovernorLayer::new(governor_conf)))
         .layer(session_layer)
         .fallback(handle_page_404)
         .with_state(Arc::new(AppState { db_conn: conn.clone() }));
@@ -148,6 +145,7 @@ async fn main() {
         )
     }
 
+    println!();
     println!("Server is running at http://localhost:8080");
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
