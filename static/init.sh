@@ -2,6 +2,7 @@
 # This script copies static files to the dist folder to node_modules
 
 HTMX_VERSION=$(jq -r '.dependencies."htmx.org"' package.json)
+HTMX_RESPONSE_TARGETS_VERSION=$(jq -r '.dependencies."htmx-ext-response-targets"' package.json)
 IDIOMORPH_VERSION=$(jq -r '.dependencies."idiomorph"' package.json)
 
 # Check if node_modules folder exists
@@ -24,7 +25,7 @@ fi
 mkdir dist
 
 cp -r ./node_modules/htmx.org/dist/htmx.js "./dist/htmx-$HTMX_VERSION.js"
-cp -r ./node_modules/htmx.org/dist/ext/response-targets.js "./dist/htmx-response-targets-$HTMX_VERSION.min.js"
+cp -r ./node_modules/htmx.org/dist/ext/response-targets.js "./dist/htmx-response-targets-$HTMX_RESPONSE_TARGETS_VERSION.min.js"
 cp -r ./node_modules/idiomorph/dist/idiomorph-ext.min.js "./dist/idiomorph-$IDIOMORPH_VERSION.min.js"
 
 echo "Done, static files copied to dist folder."
